@@ -4,7 +4,12 @@
 Notes on using Git
 Just the essentials.
 
-### Github online
+***
+### GitHub tutorial
+
+<a href="https://guides.github.com/activities/hello-world/" target="_blank">https://guides.github.com/activities/hello-world/</a>
+***
+## Github online
 
 Go to GitHub.com:
 
@@ -28,10 +33,7 @@ Click and edit the README file
 
 Everything else is mostly click-able
 
-
-
-
-###Git on a Windows PC
+## Using Git on a Windows PC
 
 Install Git for Windows:
 https://git-scm.com/download/win
@@ -63,13 +65,16 @@ First time setup:
 git config --global user.name packetiq
 git config --global user.email jim.baxter@packetiq.com
 
+## Using Git with GitHub
 
-Get a copy of an existing repository from GitHub.com to the local PC directory:
+### Fetch a copy of an existing repository from GitHub.com to a local PC directory:
 
 Change directory to where you'd like to create a copy of the repository on GitHub
-(the git clone command will create a new directory from this location with the same name as on GitHub)
+(the git clone command will create a new directory from this location with the same name as on GitHub - so don't create the directory you anticipate the files to reside in)
 
-git clone https://github.com/packetiq/Appalyzer.git		(the repository structure)
+```git clone https://github.com/packetiq/Appalyzer.git```  
+
+(this is the repository structure)
 
 ls -al  	// new repository directory should show up
 
