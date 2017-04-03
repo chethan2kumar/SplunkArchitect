@@ -29,17 +29,20 @@ The lab is facilitated by a live instructor via virtual classroom. Participants 
 
 __Installation and Infrastructure__
 
-* Install a search head, deployment server and indexers
-* Perform a scripted installation of universal forwarders
+[Install a search head, deployment server and indexers](https://github.com/packetiq/SplunkArchitect/blob/master/Install%20a%20Search%20Head%20-%20Deployment%20Server%20-%20Indexers.md)
+
+Perform a scripted installation of universal forwarders
 
 __Configuration, Collection, and Comprehension__
 
-* Deploy all specified configurations via deployment server
-* Gather data from forwarders and send to multiple indexes depending on use case
-* Configure and confirm index-time knowledge
-* Create search time field extractions
+Deploy all specified configurations via deployment server  
+Gather data from forwarders and send to multiple indexes depending on use case  
+Configure and confirm index-time knowledge  
+Create search time field extractions  
 
 __Searching and Reporting__
 
-* Create searches and dashboards for each required use case
+Create searches and dashboards for each required use case  
+
+
 
