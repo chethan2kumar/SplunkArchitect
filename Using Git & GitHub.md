@@ -183,9 +183,9 @@ SSH Key buttonClick New SSH key or Add SSH key.
 In the "Title" field, add a descriptive label for the new key. For example, if you're using a personal Mac, you might call this key "Personal MacBook Air".
 The key fieldPaste your key into the "Key" field.
 The Add key buttonClick Add SSH key.
-Sudo mode dialogIf prompted, confirm your GitHub password.
+Sudo mode dialog  
 
-
+If prompted, confirm your GitHub password.
 
 $ git clone git@github.disney.com:BAXTJ018/SplunkOnAWS.git
 
