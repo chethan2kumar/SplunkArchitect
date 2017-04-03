@@ -1,7 +1,7 @@
 
 # Using Git & GitHub
 
-Notes on using Git
+Notes on using Git  
 Just the essentials.
 
 ***
