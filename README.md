@@ -4,7 +4,7 @@ This is a repository for a set of markdown files initially created as a study an
 
 A secondary purpose is a set of notes for building a clustered Splunk environment for both on premise and AWS environments.
 
-From http://www.splunk.com/view/SP-CAAAH9R:
+From [Splunk Architect Certification Lab](http://www.splunk.com/view/SP-CAAAH9R):
 
 ## Splunk Architect Certification Lab
 
@@ -14,7 +14,7 @@ This 24-hour practical exam is designed to assess the skills and knowledge of Sp
 
 The lab is facilitated by a live instructor via virtual classroom. Participants are allowed 24 hours continuous access to the servers to complete the requirements. A live instructor is available for the first 4 hours for direct facilitation.  
 
-#### Prerequisites
+### Prerequisites
 
 * Using Splunk
 * Searching and Reporting with Splunk
