@@ -20,6 +20,9 @@
 
 5. [Install a Universal Forwarder](#install_uf)
 
+6. [Splunk Common Network Ports](#splunk_ports)
+
+
 ## Installing Splunk Enterprise on Linux <a name="install_linux"></a>  
 
 ### Obtain the Splunk installation package <a name="obtain_package"></a>  
@@ -158,5 +161,11 @@ __You are now ready to customize this instance of Splunk Enterprise for a specif
 [Table of Contents](#toc)
 
 ## Install a Universal Forwarder  <a name="install_uf"/>
+
+## Splunk Common Network Ports <a name="splunk_ports"/>
+
+![Splunk Common Network Ports](369-splunk-common-network-ports-ver1.5.jpg)  
+
+
 
 > Written with [StackEdit](https://stackedit.io/).
