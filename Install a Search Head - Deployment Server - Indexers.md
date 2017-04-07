@@ -1,7 +1,7 @@
 
 # Install a Splunk Search Head - Deployment Server - Indexers
 
-#### Table of Contents <a name="toc"/a>
+#### Table of Contents <a name="toc"/>
 1.  [Installing Splunk Enterprise on Linux](#install_linux)
 	* [Obtain the Splunk installation package](#obtain_package)
 	* [Installing the Splunk package](#install_package)
