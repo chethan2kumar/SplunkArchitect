@@ -6,6 +6,18 @@
 	* [Obtain the Splunk installation package](#obtain_package)
 	* [Installing the Splunk package](#install_package)
 	* [Logging into Splunk Enterprise - First Time](#first_login)
+	* [Post Installation Settings](#post_install_settings)
+	* [Disable Transparent Huge Pages](#disable_thp)
+	* [Set the environment variable for $SPLUNK_HOME](#set_env)
+	* [Change the default Splunk Web port from 8000 to 8080 (Optional)](#def_web_port_8080)
+	* [Configure Splunk Web to use SSL (Recommended)](#use_ssl)
+* [Create a Splunk Search Head](#create_search_head)
+
+* [Create a Splunk Indexer](#create_indexer)
+
+* [Create a Deployment Server](#create_ds)
+
+* [Install a Universal Forwarder](#install_uf)
 
 ## Installing Splunk Enterprise on Linux <a name="install_linux"></a>  
 
@@ -62,7 +74,7 @@ You may see a 'Help us improve Splunk software' message...
 
 * un-check the 'Share license usage data with Splunk' box  and click 'OK'  
 
-### Post Installation Settings
+### Post Installation Settings <a name="post_install_settings"/>
 
 These are recommended settings to ensure that Splunk starts automatically after a server reboot, set the default environment variable, and 
 
@@ -78,13 +90,13 @@ Init script is configured to run at boot.
 
 The enable boot-start exercise above creates a 'splunk' start-up script file in /etc/rc.d/init.d
 
-#### Disable Transparent Huge Pages
+#### Disable Transparent Huge Pages <a name="disable_thp"/>
 
 The /etc/rc.d/init.d file should be edited to add functions to disable Transparent Huge Pages on some linux distros such as Red Hat.
 
 <a href="https://github.com/packetiq/SplunkArchitect/blob/master/DisableTransparentHugePages.md" target="_blank">Instructions</a>
 
-#### Set the environment variable for $SPLUNK_HOME
+#### Set the environment variable for $SPLUNK_HOME <a name="set_env"/>
 
 Append this to the bottom of /etc/profile file:
 
@@ -98,7 +110,7 @@ You can now do
 or
 ```cd $SPLUNK_HOME```
 
-#### Change the default Splunk Web port from 8000 to 8080 (Optional)
+#### Change the default Splunk Web port from 8000 to 8080 (Optional) <a name="def_web_port_8080"/>
 
 For an initial test scenario, you may want to use non-SSL access, on a non-standard port. __See the next section to configure a different port and/or use SSL__
 
@@ -110,7 +122,7 @@ This adds the following to opt/splunk/etc/system/local/web.conf
 	httpport = 8080  
 
 
-### Configure Splunk Web to use SSL (Recommended)
+### Configure Splunk Web to use SSL (Recommended) <a name="use_ssl"/>
 
 From Splunk Web:
 
@@ -128,11 +140,16 @@ httpport = 8443
 enableSplunkWebSSL = true
 ```
 
-__You are now ready to customize this instance of Splunk Enterprise for a specific function:__
+__You are now ready to customize this instance of Splunk Enterprise for a specific function__
 
-Create a Splunk Search Head  
-Create a Splunk Indexer  
-Create a Deployment Server  
-Install a Universal Forwarder  
+## Create a Splunk Search Head  <a name="create_search_head"/>
+
+
+## Create a Splunk Indexer  <a name="create_indexer"/>
+
+
+## Create a Deployment Server  <a name="create_ds"/>
+
+## Install a Universal Forwarder  <a name="install_uf"/>
 
 > Written with [StackEdit](https://stackedit.io/).
