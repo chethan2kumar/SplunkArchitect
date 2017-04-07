@@ -166,6 +166,4 @@ __You are now ready to customize this instance of Splunk Enterprise for a specif
 
 ![Splunk Common Network Ports](369-splunk-common-network-ports-ver1.5.jpg)  
 
-
-
 > Written with [StackEdit](https://stackedit.io/).
