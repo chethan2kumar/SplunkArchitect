@@ -1,11 +1,14 @@
 
 # Install a Splunk Search Head - Deployment Server - Indexers
 
-<TOC>
+#### Table of Contents
+* [Installing Splunk Enterprise on Linux](#install_linux)
+	* [Obtain the Splunk installation package](#obtain_package)
+	* [Installing the Splunk package](#install_package)
 
-## Installing Splunk Enterprise - Linux 
+## Installing Splunk Enterprise on Linux <a name="install_linux"></a>  
 
-### Obtaining the Splunk installation package
+### Obtain the Splunk installation package <a name="obtain_package"></a>  
 
 * Access the Splunk website:
 <a href="https://www.splunk.com/en_us/download/sem.html?ac=ga_usa_brand_enterprise_exact_Mar17&_kk=splunk%2520enterprise&gclid=CIvWzN6Hk9MCFQsRgQodK_QARg" target="_blank">Download Splunk Enterprise RPM for Linux-x86_64</a>
@@ -20,7 +23,7 @@ previous:
 
 	```chmod 744 splunk-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm```
 
-### Installing the Splunk package
+### Installing the Splunk package <a name="install_package"></a>  
 
 ```sudo rpm -i splunk-6.5.1-f74036626f0c-linux-2.6-x86_64.rpm  ```
 
@@ -126,9 +129,9 @@ enableSplunkWebSSL = true
 
 __You are now ready to customize this instance of Splunk Enterprise for a specific function:__
 
-Create a Splunk Search Head
-Create a Splunk Indexer
-Create a Deployment Server
-Install a Universal Forwarder
+Create a Splunk Search Head  
+Create a Splunk Indexer  
+Create a Deployment Server  
+Install a Universal Forwarder  
 
 > Written with [StackEdit](https://stackedit.io/).
