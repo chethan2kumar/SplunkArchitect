@@ -5,6 +5,7 @@
 * [Installing Splunk Enterprise on Linux](#install_linux)
 	* [Obtain the Splunk installation package](#obtain_package)
 	* [Installing the Splunk package](#install_package)
+	* [Logging into Splunk Enterprise - First Time](#first_login)
 
 ## Installing Splunk Enterprise on Linux <a name="install_linux"></a>  
 
@@ -23,7 +24,7 @@ previous:
 
 	```chmod 744 splunk-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm```
 
-### Installing the Splunk package <a name="install_package"></a>  
+### Installing the Splunk package <a name="install_package"/>
 
 ```sudo rpm -i splunk-6.5.1-f74036626f0c-linux-2.6-x86_64.rpm  ```
 
@@ -47,7 +48,7 @@ You'll see a series of startup messages, then:
 
 ```The Splunk web interface is at http://<yourservername>:8000```
 
-### Logging into Splunk Enterprise - First Time
+### Logging into Splunk Enterprise - First Time <a name="first_login"/>
 
 * Login to Splunk Web: ```http://<yourservername>:8000/```
 ```
