@@ -1,8 +1,8 @@
 
 # Install a Splunk Search Head - Deployment Server - Indexers
 
-#### Table of Contents
-* [Installing Splunk Enterprise on Linux](#install_linux)
+#### Table of Contents <a name="toc"/a>
+1.  [Installing Splunk Enterprise on Linux](#install_linux)
 	* [Obtain the Splunk installation package](#obtain_package)
 	* [Installing the Splunk package](#install_package)
 	* [Logging into Splunk Enterprise - First Time](#first_login)
@@ -11,13 +11,14 @@
 	* [Set the environment variable for $SPLUNK_HOME](#set_env)
 	* [Change the default Splunk Web port from 8000 to 8080 (Optional)](#def_web_port_8080)
 	* [Configure Splunk Web to use SSL (Recommended)](#use_ssl)
-* [Create a Splunk Search Head](#create_search_head)
 
-* [Create a Splunk Indexer](#create_indexer)
+2. [Create a Splunk Search Head](#create_search_head)
 
-* [Create a Deployment Server](#create_ds)
+3. [Create a Splunk Indexer](#create_indexer)
 
-* [Install a Universal Forwarder](#install_uf)
+4. [Create a Deployment Server](#create_ds)
+
+5. [Install a Universal Forwarder](#install_uf)
 
 ## Installing Splunk Enterprise on Linux <a name="install_linux"></a>  
 
@@ -142,13 +143,19 @@ enableSplunkWebSSL = true
 
 __You are now ready to customize this instance of Splunk Enterprise for a specific function__
 
+[Table of Contents](#toc)
+
 ## Create a Splunk Search Head  <a name="create_search_head"/>
 
+[Table of Contents](#toc)
 
 ## Create a Splunk Indexer  <a name="create_indexer"/>
 
+[Table of Contents](#toc)
 
 ## Create a Deployment Server  <a name="create_ds"/>
+
+[Table of Contents](#toc)
 
 ## Install a Universal Forwarder  <a name="install_uf"/>
 
