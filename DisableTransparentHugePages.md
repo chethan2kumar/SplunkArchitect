@@ -79,10 +79,13 @@ case "$1" in
     ;;
 ```
 
-You can verify this script is working if  
+You can verify this script is working if:  
 
-* /sys/kernel/mm/transparent_hugepage/enabled  and /defrag contain:  always madvise [never]
-* Splunk starts automatically after a reboot  
+```/sys/kernel/mm/transparent_hugepage/enabled```
+and 
+```/sys/kernel/mm/transparent_hugepage/defrag```
+contain:  
+```always madvise [never]``` 
 
 ### Info on linux systemctl
 
