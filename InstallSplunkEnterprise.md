@@ -1,5 +1,5 @@
 
-# Install a Splunk Search Head - Deployment Server - Indexers
+# Install Splunk Enterprise
 
 ### Contents <a name="toc"/>
 
@@ -141,11 +141,15 @@ enableSplunkWebSSL = true
 
 __You are now ready to customize this instance of Splunk Enterprise for a specific function__
 
-If you are using a standalone instance of Splunk Enterprise 
+The following sections outline how to configure instances of Splunk Enterprise to perform specific functions (search head, indexer, etc.) in a distributed and/or clustered Splunk solution.   
+
+If you are using a standalone instance of Splunk Enterprise you may want to apply some of the function-specific settings outlined in the following sections. Generic settings that may be applied to any Splunk solution will be indicated.
 
 [top](#toc)
 
 ## Create a Splunk Search Head <a name="create_search_head"/>
+
+
 
 [top](#toc)
 
