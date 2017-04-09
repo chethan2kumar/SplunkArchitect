@@ -14,6 +14,7 @@
 	* [Configure Splunk Web to use SSL (Recommended)](#set_ssl)
 
 2. [Overview of a Clustered Splunk Environment](#clustered_overview)
+	* [Indexer Clustering](#indexer_clustering)
 
 3. [Create a Splunk Search Head](#create_search_head)
 
@@ -152,6 +153,10 @@ If you are using a standalone instance of Splunk Enterprise you may want to appl
 [top](#toc)
 
 ## Overview of a Clustered Splunk Solution <a name="clustered_overview"/>
+
+### Indexer Clustering <a name="indexer_clustering"/>
+
+Splunk supports the concept of utilizing multiple indexers in an 'index cluster' to allow setting a replication factor which creates multiple, redundant copies of indexed data so that if an indexer fails data is not lost and search performance is not affected.
 
 The image below depicts a simple clustered indexer solution:
 
