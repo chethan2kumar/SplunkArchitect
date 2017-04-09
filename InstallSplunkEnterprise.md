@@ -15,6 +15,7 @@
 
 2. [Overview of a Clustered Splunk Environment](#clustered_overview)
 	* [Indexer Clustering](#indexer_clustering)
+		* [Managing an Indexer Cluster](#managing_indexer_cluster)
 	* [Distributed Search](#distributed_search)
 	*  
 
@@ -164,13 +165,36 @@ Splunk supports the concept of utilizing multiple indexers in an 'index cluster'
 
 The image below depicts a simple clustered indexer solution:
 
-![Clustered Indexer Solution](/images/Indexer_cluster.png)  
+![Clustered Indexer Solution](/images/Simplified_basic_cluster_60.png)  
 
 There are two types of nodes in an indexer cluster:
 
-*  A single Cluster Master to manage the cluster. The master node is a specialized type of indexer that coordinates which 'buckets' are replicated across the peer nodes for redundancy.
+*  A single Cluster Master to manage the cluster. This 'master node' is a specialized type of indexer that, while it doesn't participate in any data streaming, coordinates a range of activities involving the search peers and the search head, including coordinating which 'buckets' are replicated across the peer nodes for redundancy.
 
 * Several 'peer nodes' that handle the indexing function for the cluster, indexing and maintaining multiple copies of the rawdata and index files, and running searches across the data.
+
+#### Managing an Indexer Cluster <a name="managing_indexer_cluster"></a>
+
+If you are using a index cluster, you must configure custom indexes in the indexes.conf on the Cluster Master in the application-specific directory under the ```/opt/splunk/etc/master-apps/...``` directory.
+
+
+The ```maxTotalDataSizeMB``` and ```frozenTimePeriodInSecs``` attributes in indexes.conf determine when buckets roll from cold to frozen. 
+
+If you set the coldToFrozenDir attribute in indexes.conf, the indexer will automatically copy frozen buckets to the specified location before erasing the data from the index.
+
+The following is an example of typical custom index entries in an indexes.conf file:  
+```
+[<index_name>]
+homePath   = volume:primary/index_name/db
+coldPath   = volume:primary/index_name/colddb
+thawedPath = $SPLUNK_DB/index_name/thaweddb
+repFactor = auto
+# index size = 1024 x MB
+maxTotalDataSizeMB = 30720
+# store data for 30 days before archiving
+frozenTimePeriodInSecs = 2592000
+coldToFrozenDir = "<path to frozen archive>"
+```
 
 ### Distributed Search <a name="distributed_search"></a> 
 
@@ -186,18 +210,73 @@ The search heads in a cluster are, for most purposes, interchangeable. All searc
 
 In each case, the search heads perform only the search management and presentation functions. They connect to search peers (indexers) that index data and search across the indexed data.
 
+When initiating a distributed search, the search head replicates and distributes its knowledge objects to its search peers (indexers) so that they can properly execute queries on its behalf. Knowledge objects include saved searches, event types, and other entities used in searching across indexes; this set of knowledge objects is called the knowledge bundle.
+
+Bundles typically contain a subset of files (configuration files and assets) from ```$SPLUNK_HOME/etc/system```, ```$SPLUNK_HOME/etc/apps```, and ```$SPLUNK_HOME/etc/users```. 
+
+The process of distributing knowledge bundles means that peers by default receive nearly the entire contents of the search head's apps. If an app contains large binaries that do not need to be shared with the peers, you can eliminate them from the bundle and thus reduce the bundle size.
+
+On the search head, the knowledge bundles resides under the ```$SPLUNK_HOME/var/run``` directory. The bundles have the extension .bundle for full bundles or .delta for delta bundles. They are tar files, so you can run tar tvf against them to see the contents.
+
+The knowledge bundle gets distributed to the ```$SPLUNK_HOME/var/run/searchpeers``` directory on each search peer. 
+
+On a search head cluster, you can view replication status from the search head cluster captain:  
+Settings > Distributed Search > Search Peers  
+
+
+
 [top](#toc)
 
 ## Create a Splunk Search Head <a name="create_search_head"></a>
+
+
+__Distributed search__
+
+To set up a simple distributed search topology, consisting of a single dedicated search head and several search peers, perform these steps:
+
+1. Designate a Splunk Enterprise instance as the search head. Since distributed search is enabled automatically on every full Splunk Enterprise instance, you do not actually perform any action in this step, aside from choosing the instance that you want to be your search head.
+
+2. Establish connections from the search head to all the search peers that you want it to search across. This is the key step in the procedure:
+
+__See Add search peers to the search head.__
+
+
+5. Forward the search head's internal data to the search peers. See Best practice: Forward search head data to the indexer layer.
+
+Create an outputs.conf file on the search head that configures the search head for load-balanced forwarding across the set of search peers (indexers). You must also turn off indexing on the search head, so that the search head does not both retain the data locally as well as forward it to the search peers.
+
+Here is an example outputs.conf file:
+```
+# Turn off indexing on the search head
+[indexAndForward]
+index = false
+ 
+[tcpout]
+defaultGroup = my_search_peers 
+forwardedindex.filter.disable = true  
+indexAndForward = false 
+ 
+[tcpout:my_search_peers]
+server=10.10.10.1:9997,10.10.10.2:9997,10.10.10.3:9997
+autoLB = true
+```
+
+Log in to the search head and perform a search that runs across all the search peers, such as a search for *. Examine the splunk_server field in the results. Verify that all the search peers are listed in that field.
+
+To increase indexing capacity, deploy additional search peers. To increase the search management capacity, deploy multiple search heads as members of a search head cluster.
+
 
 
 [top](#toc)
 
 ## Create a Splunk Indexer <a name="create_indexer"></a>
 
+
+Add data inputs to the search peers. You add inputs in the same way as for any indexer, either directly on the search peer or through forwarders connecting to the search peer. See the Getting Data In manual for information on data inputs.
+
+__About Indexers__
+
 Splunk Enterprise stores all of the data it processes in indexes. An index is a collection of databases, which are subdirectories located in ```$SPLUNK_HOME/var/lib/splunk```. Indexes consist of two types of files: compressed rawdata files and index files. 
-
-
 
 Splunk Enterprise comes with a number of preconfigured indexes, including:  
 
@@ -263,5 +342,9 @@ Forwarders allow you to use resources efficiently when processing large quantiti
 ## Splunk Common Network Ports
 
 ![Splunk Common Network Ports](/images/369-splunk-common-network-ports-ver1.5.jpg)  
+
+<a href="http://jordan2000.com/splunk-common-network-ports/" target="_blank">The image above was obtained from Job Jordan's Blog: http://jordan2000.com/splunk-common-network-ports</a>
+
+Other images in this document were obtained and/or modified from images copied from Splunk documentation. Splunk is not responsible for any inaccuracies introduced by my modifications.
 
 > Written with [StackEdit](https://stackedit.io/).
