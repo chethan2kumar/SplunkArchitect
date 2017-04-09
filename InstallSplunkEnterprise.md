@@ -151,8 +151,11 @@ If you are using a standalone instance of Splunk Enterprise you may want to appl
 
 [top](#toc)
 
-### Overview of a Clustered Splunk Solution <a name="clustered_overview"/>
+## Overview of a Clustered Splunk Solution <a name="clustered_overview"/>
 
+The image below depicts a simple clustered indexer solution:
+
+![Clustered Indexer Solution](/images/Horizontal_scaling_new2_60.png)  
 
 
 [top](#toc)
