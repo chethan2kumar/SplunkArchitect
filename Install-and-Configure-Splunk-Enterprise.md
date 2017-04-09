@@ -15,17 +15,24 @@
 
 2. [Overview of a Clustered Splunk Environment](#clustered_overview)
 	* [Indexer Clustering](#indexer_clustering)
-	* [Configuring Indexes on an Indexer Cluster](#configuring_indexes_cluster)
-	* [Distributed Search](#distributed_search)
+	* [Configuring Indexes on a Cluster](#configuring_indexes_cluster)
 
 3. [Create a Splunk Indexer](#create_indexer)
-	[Multisite indexer clusters](#multisite_clusters)
+	* [Multisite indexer clusters](#multisite_clusters)
 	
 4. [Create a Cluster Master](#create_cluster_master)
 
 5. [Create a Splunk Search Head](#create_search_head)
-	[Index Time vs Search Time Processing](#index_vs_search)
+	* [Index Time vs Search Time Processing](#index_vs_search)
+	* [Distributed Search](#distributed_search)
 
+
+[Other Considerations](#other)
+* [Licenses for distributed search](#search_licenses)
+* [Synchronize system clocks across the distributed search environment](#clocks)
+
+
+[Splunk Common Network Ports](#network_ports)
 
 
 ## Installing Splunk Enterprise on Linux <a name="install_splunk"></a>
@@ -176,7 +183,7 @@ There are two types of nodes in an indexer cluster:
 
 * Several 'peer nodes' (indexers) that handle the indexing function for the cluster, indexing and maintaining multiple copies of the rawdata and index files, and running searches across the data.
 
-### Configuring Indexes on an Indexer Cluster <a name="configuring_indexes_cluster"></a>
+### Configuring Indexes on a Cluster <a name="configuring_indexes_cluster"></a>
 
 If you are using a index cluster, you must configure custom indexes in the indexes.conf on the Cluster Master in the application-specific directory under the ```/opt/splunk/etc/master-apps/...``` directory.
 
@@ -190,46 +197,21 @@ The following is an example of typical custom index entries in an indexes.conf f
 homePath   = volume:primary/index_name/db
 coldPath   = volume:primary/index_name/colddb
 thawedPath = $SPLUNK_DB/index_name/thaweddb
+# Seting the repFactor attribute to "auto" causes the index's data to be replicated to other peers in the cluster
+# By default, repFactor is set to 0, which means that the index will not be replicated
 repFactor = auto
-# index size = 1024 x MB
+# index size of 30 GB = 30 x 1024 MB
 maxTotalDataSizeMB = 30720
-# store data for 30 days before archiving
+# only keep data for 30 days before archiving (default is 6 years)
 frozenTimePeriodInSecs = 2592000
-coldToFrozenDir = "<path to frozen archive>"
+# you can specify a frozen archive location
+# if no fozen archive location is specified, the data is discarded
+# coldToFrozenDir = "<path to frozen archive>"
 ```
-
-### Distributed Search <a name="distributed_search"></a> 
-
-There are two basic options for deploying a distributed search environment:
-
-* One or more independent search heads to search across the search peers.
-
-* Multiple search heads in a search head cluster.
-	
-A search head cluster is a group of search heads that work together to provide scalability and high availability. The search heads in the cluster share resources, configurations, and jobs. This offers a way to scale a deployment transparently to users. 
-
-The search heads in a cluster are, for most purposes, interchangeable. All search heads have access to the same set of search peers. They can also run or access the same searches, dashboards, knowledge objects, and so on.
-
-In each case, the search heads perform only the search management and presentation functions. They connect to search peers (indexers) that index data and search across the indexed data.
-
-When initiating a distributed search, the search head replicates and distributes its knowledge objects to its search peers (indexers) so that they can properly execute queries on its behalf. Knowledge objects include saved searches, event types, and other entities used in searching across indexes; this set of knowledge objects is called the knowledge bundle.
-
-Bundles typically contain a subset of files (configuration files and assets) from ```$SPLUNK_HOME/etc/system```, ```$SPLUNK_HOME/etc/apps```, and ```$SPLUNK_HOME/etc/users```. 
-
-The process of distributing knowledge bundles means that peers by default receive nearly the entire contents of the search head's apps. If an app contains large binaries that do not need to be shared with the peers, you can eliminate them from the bundle and thus reduce the bundle size.
-
-On the search head, the knowledge bundles resides under the ```$SPLUNK_HOME/var/run``` directory. The bundles have the extension .bundle for full bundles or .delta for delta bundles. They are tar files, so you can run tar tvf against them to see the contents.
-
-The knowledge bundle gets distributed to the ```$SPLUNK_HOME/var/run/searchpeers``` directory on each search peer. 
-
-On a search head cluster, you can view replication status from the search head cluster captain:  
-Settings > Distributed Search > Search Peers  
 
 [top](#toc)
 
 ## Create a Splunk Indexer <a name="create_indexer"></a>
-
-Add data inputs to the search peers. You add inputs in the same way as for any indexer, either directly on the indexer or through forwarders connecting to the indexer(s).
 
 Splunk Enterprise stores all of the data it processes in indexes. An index is a collection of databases, which are subdirectories located in ```$SPLUNK_HOME/var/lib/splunk```. Indexes consist of two types of files: compressed rawdata files and index files. 
 
@@ -239,7 +221,49 @@ Splunk Enterprise comes with a number of preconfigured indexes, including:
 * _internal: Stores Splunk Enterprise internal logs and processing metrics.
 * _audit: Contains events related to the file system change monitor, auditing, and all user search history.
 
+To enable an indexer as a peer node:
+
+1. Click Settings in the upper right corner of Splunk Web.
+2. In the Distributed environment group, click Indexer clustering.
+3. Select Enable indexer clustering.
+4. Select Peer node and click Next.
+5. There are a few fields to fill out:
+
+* Master URI. Enter the master's URI, including its management port. For example: https://10.152.31.202:8089.
+
+* Peer replication port. This is the port on which the peer receives replicated data streamed from the other peers. You can specify any available, unused port for this purpose. This port must be different from the management or receiving ports.
+
+* Security key. This is the key that authenticates communication between the master and the peers and search heads. The key must be the same across all cluster nodes. Set the same value here that you previously set on the master node.
+
+6. Click Enable peer node.
+
+The message appears, "You must restart Splunk for the peer node to become active."
+
+7. Click Go to Server Controls. This takes you to the Settings page where you can initiate the restart.
+
+8. Repeat this process for all the cluster's peer nodes.
+
+When you have enabled the 'replication factor' number of peers, the cluster can start indexing and replicating data (it will be blocked by the master node until the RF number of peers is enabled).
+
+__Configure peer nodes with server.conf__
+
+```
+[replication_port://9887]
+
+[clustering]
+master_uri = https://10.152.31.202:8089
+mode = slave
+pass4SymmKey = whatever
+```
+This example specifies that:
+
+* the peer will use port 9887 to listen for replicated data streamed from the other peers. You can specify any available, unused port as the replication port. Do not re-use the management or receiving ports.
+* the peer's cluster master resides at 10.152.31.202:8089.
+* the instance is a cluster peer ("slave") node.
+* the security key is "whatever".
+
 #### Index Time vs Search Time Processing <a name="index_vs_search"></a>
+
 Splunk Enterprise documentation contains references to the terms "index time" and "search time". These terms distinguish between the types of processing that occur during indexing, and the types that occur when a search is run.
 
 It is better to perform most knowledge-building activities, such as field extraction, at search time. Index-time custom field extraction can degrade performance at both index time and search time.
@@ -315,9 +339,9 @@ This example specifies that:
 
 ## Create a Cluster Master <a name="create_cluster_master"></a>
 
-If you are going to create a indexer cluster, you must also create a 'master node' (Splunk nomenclature), aka a Cluster Master. 
+If you are going to create a indexer cluster, you must also create a 'master node' (Splunk nomenclature), aka a Cluster Master, to manage the cluster.  
 
-To enable a Splunk Enterprise instance as the master node:
+To configure a Splunk Enterprise instance as the master node:
 
 1. Click Settings in the upper right corner of Splunk Web.
 2. In the Distributed environment group, click Indexer clustering.
@@ -372,6 +396,22 @@ pass4SymmKey = whatever
 cluster_label = cluster1
 ```
 
+__Restarting a Cluster Master and/or peers__
+
+When restarting cluster peers, you should use Splunk Web or one of the cluster-aware CLI commands, such as splunk offline or splunk rolling-restart. Do not use splunk restart.
+
+If, for any reason, you do need to restart both the master and the peer nodes:
+
+* Restart the master node using 'splunk restart'  
+* Restart the peers as a group, using 'splunk rolling-restart cluster-peers'
+
+You might occasionally have need to restart a single peer; for example, if you change certain configurations on only that peer. There are two ways that you can safely restart a single peer:
+
+* Use Splunk Web (Settings>Server Controls).
+* Run the command splunk offline, followed by splunk start.
+
+When you use Splunk Web or the splunk offline/splunk start commands to restart a peer, the master waits 60 seconds (by default) before assuming that the peer has gone down for good. This allows sufficient time for the peer to come back on-line and prevents the cluster from performing unnecessary remedial activities.
+
 __Cluster Master failure__
 
 If a master node goes down, peer nodes can continue to index and replicate data, and the search head can continue to search across the data, for some period of time. Problems eventually will arise, however, particularly if one of the peers goes down. There is no way to recover from peer loss without the master, and the search head will then be searching across an incomplete set of data. Generally speaking, the cluster continues as best it can without the master, but the system is in an inconsistent state and results cannot be guaranteed.
@@ -417,10 +457,42 @@ autoLB = true
 
 To increase the search management capacity, deploy multiple search heads as members of a search head cluster.
 
+### Distributed Search <a name="distributed_search"></a> 
+
+There are two basic options for deploying a distributed search environment:
+
+* One or more independent search heads to search across the search peers.
+
+* Multiple search heads in a search head cluster.
+	
+A search head cluster is a group of search heads that work together to provide scalability and high availability. The search heads in the cluster share resources, configurations, and jobs. This offers a way to scale a deployment transparently to users. 
+
+The search heads in a cluster are, for most purposes, interchangeable. All search heads have access to the same set of search peers. They can also run or access the same searches, dashboards, knowledge objects, and so on.
+
+In each case, the search heads perform only the search management and presentation functions. They connect to search peers (indexers) that index data and search across the indexed data.
+
+When initiating a distributed search, the search head replicates and distributes its knowledge objects to its search peers (indexers) so that they can properly execute queries on its behalf. Knowledge objects include saved searches, event types, and other entities used in searching across indexes; this set of knowledge objects is called the knowledge bundle.
+
+Bundles typically contain a subset of files (configuration files and assets) from ```$SPLUNK_HOME/etc/system```, ```$SPLUNK_HOME/etc/apps```, and ```$SPLUNK_HOME/etc/users```. 
+
+The process of distributing knowledge bundles means that peers by default receive nearly the entire contents of the search head's apps. If an app contains large binaries that do not need to be shared with the peers, you can eliminate them from the bundle and thus reduce the bundle size.
+
+On the search head, the knowledge bundles resides under the ```$SPLUNK_HOME/var/run``` directory. The bundles have the extension .bundle for full bundles or .delta for delta bundles. They are tar files, so you can run tar tvf against them to see the contents.
+
+The knowledge bundle gets distributed to the ```$SPLUNK_HOME/var/run/searchpeers``` directory on each search peer. 
+
+On a search head cluster, you can view replication status from the search head cluster captain:  
+Settings > Distributed Search > Search Peers  
+
+
+
 [top](#toc)
 
 
 ## Create a Deployment Server
+
+Note: You can use deployment server to distribute updates to search heads in indexer clusters, as long as they are standalone search heads. You cannot use the deployment server to distribute updates to members of a search head cluster - you must use a Deployer.  
+
 
 [top](#toc)
 
@@ -439,11 +511,31 @@ Both types of forwarders tag data with metadata such as host, source, and source
 
 Forwarders allow you to use resources efficiently when processing large quantities or disparate types of data coming from remote sources. They also offer capabilities for load balancing, data filtering, and routing.  
 
+For most types of cluster deployments, you should enable indexer acknowledgment for the forwarders sending data to the peer. 
+
+You can simplify the process of connecting forwarders to peer nodes by using the indexer discovery feature.
+
+
+Add data inputs to the search peers. You add inputs in the same way as for any indexer, either directly on the indexer or through forwarders connecting to the indexer(s).
+(what need to be done on each indexer - inputs.conf?)
 
 
 [top](#toc)
 
-## Splunk Common Network Ports
+## Other Considerations <a name="other"></a>
+
+#### Licenses for distributed search <a name="search_licenses"></a>
+
+Each instance in a distributed search deployment must have access to a license pool. This is true for both search heads and search peers. See Licenses for search heads in Admin Manual.
+
+#### Synchronize system clocks across the distributed search environment <a name="clocks"></a>
+
+Synchronize the system clocks on all machines, virtual or physical, that are running Splunk Enterprise distributed search instances. Specifically, this means your search heads and search peers. In the case of search head pooling or mounted bundles, this also includes the shared storage hardware. Otherwise, various issues can arise, such as bundle replication failures, search failures, or premature expiration of search artifacts.
+
+The synchronization method that you use depends on your specific set of machines. Consult the system documentation for the particular machines and operating systems on which you are running Splunk Enterprise. For most environments, Network Time Protocol (NTP) is the best approach.
+
+
+## Splunk Common Network Ports <a name="network_ports"></a>
 
 ![Splunk Common Network Ports](/images/369-splunk-common-network-ports-ver1.5.jpg)  
 
