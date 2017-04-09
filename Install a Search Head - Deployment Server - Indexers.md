@@ -7,10 +7,10 @@
 
 ### Obtain the Splunk installation package
 
-* Access the Splunk website:
+* Access the Splunk website:  
 <a href="https://www.splunk.com/en_us/download/sem.html?ac=ga_usa_brand_enterprise_exact_Mar17&_kk=splunk%2520enterprise&gclid=CIvWzN6Hk9MCFQsRgQodK_QARg" target="_blank">Download Splunk Enterprise RPM for Linux-x86_64</a>
 
-__Note: You will have to create or login using your Splunk user ID & password.  __
+__Note: You will have to create or login using your Splunk user ID & password.__
 
 * Select and download the appropriate rpm package (...x86_64.rpm)
 * Use ftp or WinSCP to copy the package to the splunk server.  
