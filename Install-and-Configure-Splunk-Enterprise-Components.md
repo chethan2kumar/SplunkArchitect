@@ -26,13 +26,17 @@
 	* [Index Time vs Search Time Processing](#index_vs_search)
 	* [Distributed Search](#distributed_search)
 
+6. [Create a Deployment Server](#create_deployment_server)
 
-[Other Considerations](#other)
-* [Licenses for distributed search](#search_licenses)
-* [Synchronize system clocks across the distributed search environment](#clocks)
+7. [Create a Deployer](#create_deployer)
 
+8. [Create a License Server](#create_lic_svr)
 
-[Splunk Common Network Ports](#network_ports)
+9. [Other Considerations](#other)
+	* [Licenses for distributed search](#search_licenses)
+	* [Synchronize system clocks across the distributed search environment](#clocks)
+
+10. [Splunk Common Network Ports](#network_ports)
 
 
 ## Installing Splunk Enterprise on Linux <a name="install_splunk"></a>
