@@ -19,10 +19,10 @@
 
 
 3. [Create a Splunk Indexer](#create_indexer)
-	* [Managing Configurations Across Peers](#managing_peer_configs)
 	* [Multisite indexer clusters](#multisite_clusters)
 	
 4. [Create a Cluster Master](#create_cluster_master)
+	* [Managing Configurations Across Peers](#managing_peer_configs)
 	* [Configuring Indexes on a Cluster](#configuring_indexes_cluster)
 
 5. [Create a Splunk Search Head](#create_search_head)
@@ -409,7 +409,7 @@ When you use Splunk Web or the splunk offline/splunk start commands to restart a
 ```splunk apply cluster-bundle```
 
 
-#### Configuring Indexes on a Cluster <a name="configuring_indexes_cluster"></a>
+### Configuring Indexes on a Cluster <a name="configuring_indexes_cluster"></a>
 
 If you are using a index cluster, you must configure custom indexes in the indexes.conf on the Cluster Master in the application-specific directory under the ```/opt/splunk/etc/master-apps/...``` directory.
 
