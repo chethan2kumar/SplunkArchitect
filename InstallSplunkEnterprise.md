@@ -156,12 +156,17 @@ If you are using a standalone instance of Splunk Enterprise you may want to appl
 
 ### Indexer Clustering <a name="indexer_clustering"/>
 
-Splunk supports the concept of utilizing multiple indexers in an 'index cluster' to allow setting a replication factor which creates multiple, redundant copies of indexed data so that if an indexer fails data is not lost and search performance is not affected.
+Splunk supports the concept of utilizing multiple indexers in an 'index cluster' to allow setting a 'replication factor' which creates multiple, redundant copies of indexed data so that if an indexer fails data is not lost and search performance is not affected.
 
 The image below depicts a simple clustered indexer solution:
 
 ![Clustered Indexer Solution](/images/Horizontal_scaling_new2_60.png)  
 
+There are three types of nodes in a cluster:
+
+*  A single Cluster Master to manage the cluster. The master node is a specialized type of indexer.
+* Several 'peer nodes' that handle the indexing function for the cluster, indexing and maintaining multiple copies of the data and running searches across the data.
+* One or more search heads to coordinate searches across all the peer nodes.
 
 [top](#toc)
 
