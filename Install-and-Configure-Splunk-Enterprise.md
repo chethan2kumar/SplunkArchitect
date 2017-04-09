@@ -1,5 +1,5 @@
 
-# Install Splunk Enterprise
+# Install and Configure Splunk Enterprise
 
 ### Contents <a name="toc"></a>
 
@@ -261,16 +261,13 @@ server=10.10.10.1:9997,10.10.10.2:9997,10.10.10.3:9997
 autoLB = true
 ```
 
-Log in to the search head and perform a search that runs across all the search peers, such as a search for *. Examine the splunk_server field in the results. Verify that all the search peers are listed in that field.
+Log in to the search head and perform a search that runs across all the search peers, such as a search for *. Examine the 'splunk_server' field in the results to verify that all the search peers are listed in that field.
 
-To increase indexing capacity, deploy additional search peers. To increase the search management capacity, deploy multiple search heads as members of a search head cluster.
-
-
+To increase the search management capacity, deploy multiple search heads as members of a search head cluster.
 
 [top](#toc)
 
 ## Create a Splunk Indexer <a name="create_indexer"></a>
-
 
 Add data inputs to the search peers. You add inputs in the same way as for any indexer, either directly on the search peer or through forwarders connecting to the search peer. See the Getting Data In manual for information on data inputs.
 
@@ -343,7 +340,7 @@ Forwarders allow you to use resources efficiently when processing large quantiti
 
 ![Splunk Common Network Ports](/images/369-splunk-common-network-ports-ver1.5.jpg)  
 
-<a href="http://jordan2000.com/splunk-common-network-ports/" target="_blank">The image above was obtained from Job Jordan's Blog: http://jordan2000.com/splunk-common-network-ports</a>
+The image above was obtained from <a href="http://jordan2000.com/splunk-common-network-ports/" target="_blank">Job Jordan's Blog: http://jordan2000.com/splunk-common-network-ports</a>
 
 Other images in this document were obtained and/or modified from images copied from Splunk documentation. Splunk is not responsible for any inaccuracies introduced by my modifications.
 
