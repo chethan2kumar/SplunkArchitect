@@ -13,7 +13,10 @@
 	* [Change the default Splunk Web port from 8000 to 8080 (Optional)](#set_port_8080)
 	* [Configure Splunk Web to use SSL (Recommended)](#set_ssl)
 
-2. 
+2. [Create a Splunk Search Head](#create_search_head)
+
+
+
 ## Installing Splunk Enterprise on Linux <a name="install_splunk"/>
 All Splunk components except a Universal Forwarder ( a separate lightweight package ) are based on an installation of Splunk Enterprise with specific configuration options.
 
@@ -142,7 +145,7 @@ If you are using a standalone instance of Splunk Enterprise
 
 [top](#toc)
 
-## Create a Splunk Search Head
+## Create a Splunk Search Head <a name="create_search_head"/>
 
 [top](#toc)
 
