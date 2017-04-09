@@ -160,7 +160,7 @@ Splunk supports the concept of utilizing multiple indexers in an 'index cluster'
 
 The image below depicts a simple clustered indexer solution:
 
-![Clustered Indexer Solution](/images/Horizontal_scaling_new2_60.png)  
+![Clustered Indexer Solution](/images/Indexer_cluster.png)  
 
 There are three types of nodes in a cluster:
 
