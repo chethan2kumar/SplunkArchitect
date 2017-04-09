@@ -29,7 +29,7 @@
 	* [Index Time vs Search Time Processing](#index_vs_search)
 	* [Distributed Search](#distributed_search)
 
-6. [Create a Deployment Server](#create_deployment_server)
+6. [Create a Deployment Server](#create_deployment_svr)
 
 7. [Create a Deployer](#create_deployer)
 
@@ -444,6 +444,27 @@ A dashboard appears with information on the last successful push.
 A pop-up window warns you that the distribution might, under certain circumstances, initiate a restart of all the peer nodes. For information on which configuration changes cause a peer restart, see Restart or reload after configuration bundle changes?.
 * Push Changes
 
+Some changes to files in the configuration bundle require that the peers restart. In other cases, the peers can just reload, avoiding any interruption to indexing or searching. The bundle reload phase on the peers determines whether a restart is required and directs the master to initiate a rolling restart of the peers only if necessary.
+
+A Reload occurs when:
+
+* If you are using load-balanced forwarders to send data to the peer nodes and you make any changes to props.conf or transforms.conf.
+* If you are not using load-balanced forwarders and
+* you add a new sourcetype in props.conf.
+* you add or update any TRANSFORMS-<class> stanzas in props.conf.
+* you add any new stanzas in transforms.conf.
+* You make any of these changes in indexes.conf:
+	* Adding new index stanzas
+	* Enabling or disabling an index with no data
+	* Changing any attributes not listed as requiring restart in Determine which indexes.conf changes require restart.
+
+A Restart occurs when:
+
+* The configuration bundle contains changes to any configuration files besides indexes.conf, props.conf, or transforms.conf.
+* You make any changes to props.conf or transforms.conf, other than those specified in the reload list, above.
+* You make any of the indexes.conf changes described in Determine which indexes.conf changes require restart.
+* You delete an existing app from the configuration bundle.
+
 ### Configuring Indexes on a Cluster <a name="configuring_indexes_cluster"></a>
 
 If you are using a index cluster, you must configure custom indexes in the indexes.conf on the Cluster Master in the application-specific directory under the ```/opt/splunk/etc/master-apps/...``` directory.
@@ -494,18 +515,83 @@ If a master node goes down, peer nodes can continue to index and replicate data,
 
 ## Create a Splunk Search Head <a name="create_search_head"></a>
 
-__Distributed search__
+There are two basic options for deploying a distributed search environment:
 
-To set up a simple distributed search topology, consisting of a single dedicated search head and several search peers, perform these steps:
+* One or more independent search heads to search across the search peers.
+* Multiple search heads in a search head cluster.
+
+In either case, you must set the initial configuration to create a search head:
+
+__Configure a Splunk instance as a search head in an indexer cluster:__
+
+1. Click Settings in the upper right corner of Splunk Web.
+2. In the Distributed environment group, click Indexer clustering.
+3. Select Enable clustering.
+4. Select Search head node and click Next.
+5. There are a few fields to fill out:
+
+* Master URI. Enter the master's URI, including its management port. For example: https://10.152.31.202:8089.
+* Security key. This is the key that authenticates communication between the master and the peers and search heads. The key must be the same across all cluster nodes. Set the same value here that you previously set on the master node.
+
+6. Click Enable search head node.
+
+	The message appears, "You must restart Splunk for the search node to become active. You can restart Splunk from Server Controls."
+
+7. Click Go to Server Controls. This takes you to the Settings page where you can initiate the restart.  
+
+8. After the restart, log back into the search head and return to the Clustering page in Splunk Web. This time, you see the search head's clustering dashboard.  
+
+9. Configure the search head as a forwarder. Create an outputs.conf file on the search head that configures the search head for load-balanced forwarding across the set of search peers (indexers). You must also turn off indexing on the search head, so that the search head does not both retain the data locally as well as forward it to the search peers.
+
+	Here is an example outputs.conf file:
+```
+# Turn off indexing on the search head
+[indexAndForward]
+index = false
+ 
+[tcpout]
+defaultGroup = my_search_peers 
+forwardedindex.filter.disable = true  
+indexAndForward = false 
+ 
+[tcpout:my_search_peers]
+server=10.10.10.1:9997,10.10.10.2:9997,10.10.10.3:9997
+autoLB = true
+This example assumes that each indexer's receiving port is set to 9997.
+```
+
+__Creating a search head by editing server.conf:__
+
+You can also create a search head by editing the server.conf file in ```/opt/splunk/etc/system/local```; note the 'mode = searchhead' entry:
+```
+[clustering]
+master_uri = https://10.152.31.202:8089
+mode = searchhead
+pass4SymmKey = whatever
+```
+This example specifies that:
+
+* the search head's cluster master resides at 10.152.31.202:8089.
+* the instance is a cluster search head.
+* the security key is "whatever".
+
+__Distributed search with single dedicated search head and several search peers__
 
 1. Designate a Splunk Enterprise instance as the search head. Since distributed search is enabled automatically on every full Splunk Enterprise instance, you do not actually perform any action in this step, aside from choosing the instance that you want to be your search head.
 
 2. Establish connections from the search head to all the search peers that you want it to search across. This is the key step in the procedure:
 
-__See Add search peers to the search head.__
+	To activate distributed search, you add search peers, or indexers, to a Splunk Enterprise instance that you designate as a search head. You do this by specifying each search peer manually:
+
+* Settings > Distributed search > Search peers > New
+* Specify the search peer, along with any authentication settings
+	Note: You must precede the search peer's host name or IP address with the URI scheme, either "http" or "https".
+* Save
+* Repeat for each of the search head's search peers.
 
 
-3. Forward the search head's internal data to the search peers (indexers):
+
+__Forward the search head's internal data to the search peers (indexers):__
 
 * Create an outputs.conf file on the search head that configures the search head for load-balanced forwarding across the set of search peers (indexers).  
 
@@ -531,14 +617,8 @@ autoLB = true
 
 To increase the search management capacity, deploy multiple search heads as members of a search head cluster.
 
-### Distributed Search <a name="distributed_search"></a> 
+### Creating a Search Head Cluster <a name="distributed_search"></a> 
 
-There are two basic options for deploying a distributed search environment:
-
-* One or more independent search heads to search across the search peers.
-
-* Multiple search heads in a search head cluster.
-	
 A search head cluster is a group of search heads that work together to provide scalability and high availability. The search heads in the cluster share resources, configurations, and jobs. This offers a way to scale a deployment transparently to users. 
 
 The search heads in a cluster are, for most purposes, interchangeable. All search heads have access to the same set of search peers. They can also run or access the same searches, dashboards, knowledge objects, and so on.
@@ -558,14 +638,30 @@ The knowledge bundle gets distributed to the ```$SPLUNK_HOME/var/run/searchpeers
 On a search head cluster, you can view replication status from the search head cluster captain:  
 Settings > Distributed Search > Search Peers  
 
+
+__Forward the search head's internal data to the search peers (indexers):__
+
+The steps for configuring a search head to forward its internal data were outlined in the previous section. 
+
+You perform the same configuration steps to forward data from search head cluster members to their set of search peers. *However, you must ensure that all members use the same outputs.conf file*. To do so, do not edit the file on the individual search heads. Instead, __use a deployer to propagate the file across the search head cluster__.
+
 [top](#toc)
 
 
-## Create a Deployment Server
+## Create a Deployment Server <a name="create_deployment_svr"></a>
+
+
 
 Note: You can use deployment server to distribute updates to search heads in indexer clusters, as long as they are standalone search heads. You cannot use the deployment server to distribute updates to members of a search head cluster - you must use a Deployer.  
 
 [top](#toc)
+
+
+## Create a Deployer <a name="create_deployer"></a>
+
+
+[top](#toc)
+
 
 ## Create a License Server <a name="create_lic_server"></a>
 
