@@ -13,12 +13,14 @@
 	* [Change the default Splunk Web port from 8000 to 8080 (Optional)](#set_port_8080)
 	* [Configure Splunk Web to use SSL (Recommended)](#set_ssl)
 
-2. [Create a Splunk Search Head](#create_search_head)
+2. [Overview of a Clustered Splunk Environment](#clustered_overview)
+
+3. [Create a Splunk Search Head](#create_search_head)
 
 
 
 ## Installing Splunk Enterprise on Linux <a name="install_splunk"/>
-All Splunk components except a Universal Forwarder ( a separate lightweight package ) are based on an installation of Splunk Enterprise with specific configuration options.
+All Splunk components except a Universal Forwarder ( a separate lightweight package ) are based on an installation of Splunk Enterprise with specific configuration options - so the first step in creating any component in a Splunk solution is installing Splunk Enterprise.  
 
 ### Obtain the Splunk installation package <a name="get_package"/>
 
@@ -143,12 +145,19 @@ __You are now ready to customize this instance of Splunk Enterprise for a specif
 
 The following sections outline how to configure instances of Splunk Enterprise to perform specific functions (search head, indexer, etc.) in a distributed and/or clustered Splunk solution.   
 
+It may be helpful to read the section '[Overview of a Clustered Splunk Environment](#clustered_overview)' below before progressing to specific component configuration.
+
 If you are using a standalone instance of Splunk Enterprise you may want to apply some of the function-specific settings outlined in the following sections. Generic settings that may be applied to any Splunk solution will be indicated.
 
 [top](#toc)
 
-## Create a Splunk Search Head <a name="create_search_head"/>
+### Overview of a Clustered Splunk Solution <a name="clustered_overview"/>
 
+
+
+[top](#toc)
+
+## Create a Splunk Search Head <a name="create_search_head"/>
 
 
 [top](#toc)
@@ -166,6 +175,6 @@ If you are using a standalone instance of Splunk Enterprise you may want to appl
 
 ## Splunk Common Network Ports
 
-![Splunk Common Network Ports](369-splunk-common-network-ports-ver1.5.jpg)  
+![Splunk Common Network Ports](/images/369-splunk-common-network-ports-ver1.5.jpg)  
 
 > Written with [StackEdit](https://stackedit.io/).
