@@ -15,7 +15,7 @@
 
 2. [Overview of a Clustered Splunk Environment](#clustered_overview)
 	* [Indexer Clustering](#indexer_clustering)
-	* [Managing an Indexer Cluster](#managing_indexer_cluster)
+	* [Configuring Indexes on an Indexer Cluster](#configuring_indexes_cluster)
 	* [Distributed Search](#distributed_search)
 
 3. [Create a Splunk Indexer](#create_indexer)
@@ -176,7 +176,7 @@ There are two types of nodes in an indexer cluster:
 
 * Several 'peer nodes' (indexers) that handle the indexing function for the cluster, indexing and maintaining multiple copies of the rawdata and index files, and running searches across the data.
 
-### Managing an Indexer Cluster <a name="managing_indexer_cluster"></a>
+### Configuring Indexes on an Indexer Cluster <a name="configuring_indexes_cluster"></a>
 
 If you are using a index cluster, you must configure custom indexes in the indexes.conf on the Cluster Master in the application-specific directory under the ```/opt/splunk/etc/master-apps/...``` directory.
 
