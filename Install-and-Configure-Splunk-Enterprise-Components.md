@@ -265,7 +265,7 @@ When you have enabled the 'replication factor' number of peers, the cluster can 
 
 __Configure peer nodes with server.conf__
 
-You can configure an indexer / peer node my editing the server.conf file in ```/opt/splunk/etc/system/local/```; note the 'mode = slave' entry:
+You can also configure an indexer / peer node my editing the server.conf file in ```/opt/splunk/etc/system/local/```; note the 'mode = slave' entry:
 
 ```
 [replication_port://9887]
@@ -387,27 +387,62 @@ search_factor = 3
 pass4SymmKey = whatever
 cluster_label = cluster1
 ```
-__Restarting a Cluster Master and/or peers__
-
-When restarting cluster peers, you should use Splunk Web or one of the cluster-aware CLI commands, such as splunk offline or splunk rolling-restart. Do not use splunk restart.
-
-If, for any reason, you do need to restart both the master and the peer nodes:
-
-* Restart the master node using __'splunk restart'__  
-* Restart the peers as a group, using __'splunk rolling-restart cluster-peers'__
-
-You might occasionally have need to restart a single peer; for example, if you change certain configurations on only that peer. There are two ways that you can safely restart a single peer:
-
-* Use Splunk Web (Settings>Server Controls).
-* Run the command __'splunk offline'__, followed by __'splunk start'__.
-
-When you use Splunk Web or the splunk offline/splunk start commands to restart a peer, the master waits 60 seconds (by default) before assuming that the peer has gone down for good. This allows sufficient time for the peer to come back on-line and prevents the cluster from performing unnecessary remedial activities.
 
 ### Managing Configurations Across Peers <a name="managing_peer_configs"></a>
 
+The peer update process ensures that all peer nodes share a common set of key configuration files. You must manually invoke this process to distribute and update common files, including apps, to the peer nodes. The process also runs automatically when a peer joins the cluster.
 
-```splunk apply cluster-bundle```
+The configuration files that must be identical in most circumstances are indexes.conf, props.conf, and transforms.conf. Other configuration files can also be identical, depending on the needs of your system. Since apps usually include versions of those key files, you should also maintain a common set of apps across all peers.
 
+The set of configuration files and apps common to all peers is called the configuration bundle. The process used to distribute the configuration bundle is known as the configuration bundle method.
+
+To distribute new or edited configuration files or apps across all the peers, you add the files to the configuration bundle on the master and tell the master to distribute the files to the peers using the command: ```splunk apply cluster-bundle```.
+
+On the master, the configuration bundle resides under the $SPLUNK_HOME/etc/master-apps directory. The set of files under that directory constitute the configuration bundle. They are always distributed as a group to all the peers. The directory has this structure:
+```
+$SPLUNK_HOME/etc/master-apps/
+     _cluster/
+          default/
+          local/
+     <app-name>/
+     <app-name>/
+     ...
+```
+ The /_cluster directory is a special location for configuration files that need to be distributed across all peers, as follows:
+ 
+* The /_cluster/default subdirectory contains a default version of indexes.conf. Do not add any files to this directory and do not change any files in it. This peer-specific default indexes.conf has a higher precedence than the standard default indexes.conf, located under ```$SPLUNK_HOME/etc/system/default```.
+
+* The ```/_cluster/local``` subdirectory is where you can put new or edited configuration files that you want to distribute to the peers.
+
+* When you then restart the master following completion of the upgrade, it performs a rolling restart on its peer nodes and pushes the new bundle to the ```/slave-apps``` directory on all the peer nodes.
+
+*  The ```/<app-name>``` subdirectories are optional. They provide a way to distribute any app to the peer nodes. Create and populate them as needed. For example, to distribute "appBestEver" to the peer nodes, place a copy of that app in its own subdirectory: ```$SPLUNK_HOME/etc/master-apps/appBestEver```.
+
+* To delete an app that you previously distributed to the peers, remove its directory from the configuration bundle. When you next push the bundle, the app will be deleted from each peer.
+
+* Note: The master only pushes the contents of subdirectories under master-apps. It will not push any standalone files directly under master-apps.
+
+* You explicitly tell the master when you want it to distribute the latest configuration bundle to the peers. In addition, when a peer registers with the master (for example, when the peer joins the cluster), the master distributes the current configuration bundle to it.
+
+Caution: When the master distributes the bundle to the peers, it distributes the entire bundle, overwriting the entire contents of any configuration bundle previously distributed to the peers.
+
+The master-apps location is only for peer node files. The master does not use the files in that directory for its own configuration needs.
+
+__To distribute a new configuration bundle:  __
+
+Validate the bundle: ```splunk validate cluster-bundle```
+You can check the status of bundle validation ```splunk show cluster-bundle-status```
+Apply the bundle: ```splunk apply cluster-bundle```
+To avoid having to answer the prompt: ```splunk apply cluster-bundle --answer-yes```
+
+You can also distribute a new configuration bundle from the GUI on the Cluster Master:
+
+* Settings > Indexer clustering
+* Click Edit > Distribute Configuration Bundle
+A dashboard appears with information on the last successful push. 
+* Click the Distribute Configuration Bundle button.
+A pop-up window warns you that the distribution might, under certain circumstances, initiate a restart of all the peer nodes. For information on which configuration changes cause a peer restart, see Restart or reload after configuration bundle changes?.
+* Push Changes
 
 ### Configuring Indexes on a Cluster <a name="configuring_indexes_cluster"></a>
 
@@ -434,6 +469,22 @@ frozenTimePeriodInSecs = 2592000
 # if no fozen archive location is specified, the data is discarded
 # coldToFrozenDir = "<path to frozen archive>"
 ```
+
+__Restarting a Cluster Master and/or peers__
+
+When restarting cluster peers, you should use Splunk Web or one of the cluster-aware CLI commands, such as splunk offline or splunk rolling-restart. Do not use splunk restart.
+
+If, for any reason, you do need to restart both the master and the peer nodes:
+
+* Restart the master node using __'splunk restart'__  
+* Restart the peers as a group, using __'splunk rolling-restart cluster-peers'__
+
+You might occasionally have need to restart a single peer; for example, if you change certain configurations on only that peer. There are two ways that you can safely restart a single peer:
+
+* Use Splunk Web (Settings>Server Controls).
+* Run the command __'splunk offline'__, followed by __'splunk start'__.
+
+When you use Splunk Web or the splunk offline/splunk start commands to restart a peer, the master waits 60 seconds (by default) before assuming that the peer has gone down for good. This allows sufficient time for the peer to come back on-line and prevents the cluster from performing unnecessary remedial activities.
 
 __Cluster Master failure__
 
