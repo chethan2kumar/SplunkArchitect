@@ -1,5 +1,5 @@
 
-# Install and Configure Splunk Enterprise
+# Install and Configure Splunk Enterprise Components
 
 ### Contents <a name="toc"></a>
 
@@ -12,15 +12,18 @@
 	* [Set the environment variable for $SPLUNK_HOME](#set_env)
 	* [Change the default Splunk Web port from 8000 to 8080 (Optional)](#set_port_8080)
 	* [Configure Splunk Web to use SSL (Recommended)](#set_ssl)
+	* [Synchronize system clocks across the distributed search environment](#clocks) 
 
 2. [Overview of a Clustered Splunk Environment](#clustered_overview)
 	* [Indexer Clustering](#indexer_clustering)
-	* [Configuring Indexes on a Cluster](#configuring_indexes_cluster)
+
 
 3. [Create a Splunk Indexer](#create_indexer)
+	* [Managing Configurations Across Peers](#managing_peer_configs)
 	* [Multisite indexer clusters](#multisite_clusters)
 	
 4. [Create a Cluster Master](#create_cluster_master)
+	* [Configuring Indexes on a Cluster](#configuring_indexes_cluster)
 
 5. [Create a Splunk Search Head](#create_search_head)
 	* [Index Time vs Search Time Processing](#index_vs_search)
@@ -31,10 +34,9 @@
 7. [Create a Deployer](#create_deployer)
 
 8. [Create a License Server](#create_lic_svr)
-
-9. [Other Considerations](#other)
 	* [Licenses for distributed search](#search_licenses)
-	* [Synchronize system clocks across the distributed search environment](#clocks)
+
+9. [Install a Universal Forwarder](#install_uf)
 
 10. [Splunk Common Network Ports](#network_ports)
 
@@ -161,6 +163,12 @@ httpport = 8443
 enableSplunkWebSSL = true
 ```
 
+#### Synchronize system clocks across the distributed search environment <a name="clocks"></a>
+
+Synchronize the system clocks on all machines, virtual or physical, that are running Splunk Enterprise distributed search instances. Specifically, this means your search heads and search peers. In the case of search head pooling or mounted bundles, this also includes the shared storage hardware. Otherwise, various issues can arise, such as bundle replication failures, search failures, or premature expiration of search artifacts.
+
+The synchronization method that you use depends on your specific set of machines. For most environments, Network Time Protocol (NTP) is the best approach.
+
 __You are now ready to customize this instance of Splunk Enterprise for a specific function__
 
 The following sections outline how to configure instances of Splunk Enterprise to perform specific functions (search head, indexer, etc.) in a distributed and/or clustered Splunk solution.   
@@ -187,37 +195,43 @@ There are two types of nodes in an indexer cluster:
 
 * Several 'peer nodes' (indexers) that handle the indexing function for the cluster, indexing and maintaining multiple copies of the rawdata and index files, and running searches across the data.
 
-### Configuring Indexes on a Cluster <a name="configuring_indexes_cluster"></a>
+#### Index Time vs Search Time Processing <a name="index_vs_search"></a>
 
-If you are using a index cluster, you must configure custom indexes in the indexes.conf on the Cluster Master in the application-specific directory under the ```/opt/splunk/etc/master-apps/...``` directory.
+Splunk Enterprise documentation contains references to the terms "index time" and "search time". These terms distinguish between the types of processing that occur during indexing, and the types that occur when a search is run.
 
-The ```maxTotalDataSizeMB``` and ```frozenTimePeriodInSecs``` attributes in indexes.conf determine when buckets roll from cold to frozen. 
+It is better to perform most knowledge-building activities, such as field extraction, at search time. Index-time custom field extraction can degrade performance at both index time and search time.
 
-If you set the coldToFrozenDir attribute in indexes.conf, the indexer will automatically copy frozen buckets to the specified location before erasing the data from the index.
+Index-time processes take place between the point when the data is consumed and the point when it is written to disk.
 
-The following is an example of typical custom index entries in an indexes.conf file:  
-```
-[<index_name>]
-homePath   = volume:primary/index_name/db
-coldPath   = volume:primary/index_name/colddb
-thawedPath = $SPLUNK_DB/index_name/thaweddb
-# Seting the repFactor attribute to "auto" causes the index's data to be replicated to other peers in the cluster
-# By default, repFactor is set to 0, which means that the index will not be replicated
-repFactor = auto
-# index size of 30 GB = 30 x 1024 MB
-maxTotalDataSizeMB = 30720
-# only keep data for 30 days before archiving (default is 6 years)
-frozenTimePeriodInSecs = 2592000
-# you can specify a frozen archive location
-# if no fozen archive location is specified, the data is discarded
-# coldToFrozenDir = "<path to frozen archive>"
-```
+The following processes occur during index time (controlled by __props.conf__ on an indexer):
+
+* Default field extraction (such as host, source, sourcetype, and timestamp)
+* Static or dynamic host assignment for specific inputs
+* Default host assignment overrides
+* Source type customization
+* Custom index-time field extraction
+* Structured data field extraction
+* Event timestamping
+* Event linebreaking
+* Event segmentation (also happens at search time)
+
+Search-time processes take place while a search is run, as events are collected by the search. The following processes occur at search time:
+
+* Event segmentation (also happens at index time)
+* Event type matching
+* Search-time field extraction (automatic and custom field extractions, including multivalue fields and calculated fields)
+* Field aliasing
+* Addition of fields from lookups
+* Source type renaming
+* Tagging  
 
 [top](#toc)
 
 ## Create a Splunk Indexer <a name="create_indexer"></a>
 
-Splunk Enterprise stores all of the data it processes in indexes. An index is a collection of databases, which are subdirectories located in ```$SPLUNK_HOME/var/lib/splunk```. Indexes consist of two types of files: compressed rawdata files and index files. 
+Splunk Enterprise stores all of the data it processes in indexes. An index is a collection of databases, which are subdirectories located in ```$SPLUNK_HOME/var/lib/splunk```.  
+
+Indexes consist of two types of files: compressed __rawdata files__ and __index files__. 
 
 Splunk Enterprise comes with a number of preconfigured indexes, including:  
 
@@ -225,7 +239,7 @@ Splunk Enterprise comes with a number of preconfigured indexes, including:
 * _internal: Stores Splunk Enterprise internal logs and processing metrics.
 * _audit: Contains events related to the file system change monitor, auditing, and all user search history.
 
-To enable an indexer as a peer node:
+__To enable an indexer as a peer node:__
 
 1. Click Settings in the upper right corner of Splunk Web.
 2. In the Distributed environment group, click Indexer clustering.
@@ -251,6 +265,8 @@ When you have enabled the 'replication factor' number of peers, the cluster can 
 
 __Configure peer nodes with server.conf__
 
+You can configure an indexer / peer node my editing the server.conf file in ```/opt/splunk/etc/system/local/```; note the 'mode = slave' entry:
+
 ```
 [replication_port://9887]
 
@@ -265,36 +281,6 @@ This example specifies that:
 * the peer's cluster master resides at 10.152.31.202:8089.
 * the instance is a cluster peer ("slave") node.
 * the security key is "whatever".
-
-#### Index Time vs Search Time Processing <a name="index_vs_search"></a>
-
-Splunk Enterprise documentation contains references to the terms "index time" and "search time". These terms distinguish between the types of processing that occur during indexing, and the types that occur when a search is run.
-
-It is better to perform most knowledge-building activities, such as field extraction, at search time. Index-time custom field extraction can degrade performance at both index time and search time.
-
-Index-time processes take place between the point when the data is consumed and the point when it is written to disk.
-
-The following processes occur during index time:
-
-* Default field extraction (such as host, source, sourcetype, and timestamp)
-* Static or dynamic host assignment for specific inputs
-* Default host assignment overrides
-* Source type customization
-* Custom index-time field extraction
-* Structured data field extraction
-* Event timestamping
-* Event linebreaking
-* Event segmentation (also happens at search time)
-
-Search-time processes take place while a search is run, as events are collected by the search. The following processes occur at search time:
-
-* Event segmentation (also happens at index time)
-* Event type matching
-* Search-time field extraction (automatic and custom field extractions, including multivalue fields and calculated fields)
-* Field aliasing
-* Addition of fields from lookups
-* Source type renaming
-* Tagging  
 
 ### Multisite indexer clusters <a name="multisite_clusters"></a>
 
@@ -319,7 +305,6 @@ site_search_factor = origin:1,total:2
 pass4SymmKey = whatever
 cluster_label = cluster1
 ```
-
 This example specifies that:
 
 * the instance is located on site1.
@@ -341,11 +326,14 @@ This example specifies that:
 * The pass4SymmKey attribute, which sets the security key, must be the same across all cluster nodes. See Configure the indexer cluster with server.conf for details.
 * The cluster label is optional. It is useful for identifying the cluster in the monitoring console. 
 
+[top](#toc)
+
+
 ## Create a Cluster Master <a name="create_cluster_master"></a>
 
-If you are going to create a indexer cluster, you must also create a 'master node' (Splunk nomenclature), aka a Cluster Master, to manage the cluster.  
+If you are going to create a indexer cluster, you must also create a 'master node' (Splunk nomenclature) - aka a Cluster Master - to manage the cluster.  
 
-To configure a Splunk Enterprise instance as the master node:
+__To configure a Splunk Enterprise instance as the Cluster Master / master node:__
 
 1. Click Settings in the upper right corner of Splunk Web.
 2. In the Distributed environment group, click Indexer clustering.
@@ -363,7 +351,7 @@ To configure a Splunk Enterprise instance as the master node:
 
 6. Click Enable master node. The message appears, "You must restart Splunk for the master node to become active. You can restart Splunk from Server Controls."
 
-7. Create an outputs.conf file in ```/opt/splunk/etc/system/local/``` on the master node that configures it for load-balanced forwarding across the set of peer nodes. You must also turn off indexing on the master, so that the master does not both retain the data locally as well as forward it to the peers.
+7. Create an outputs.conf file in ```/opt/splunk/etc/system/local/``` on the master node that configures it for load-balanced forwarding of its internal log files across the set of peer nodes. You must also turn off indexing on the master, so that the master does not both retain the data locally as well as forward it to the peers.
 
 	Here is an example outputs.conf file that accomplishes these requirements:
 ```
@@ -399,22 +387,53 @@ search_factor = 3
 pass4SymmKey = whatever
 cluster_label = cluster1
 ```
-
 __Restarting a Cluster Master and/or peers__
 
 When restarting cluster peers, you should use Splunk Web or one of the cluster-aware CLI commands, such as splunk offline or splunk rolling-restart. Do not use splunk restart.
 
 If, for any reason, you do need to restart both the master and the peer nodes:
 
-* Restart the master node using 'splunk restart'  
-* Restart the peers as a group, using 'splunk rolling-restart cluster-peers'
+* Restart the master node using __'splunk restart'__  
+* Restart the peers as a group, using __'splunk rolling-restart cluster-peers'__
 
 You might occasionally have need to restart a single peer; for example, if you change certain configurations on only that peer. There are two ways that you can safely restart a single peer:
 
 * Use Splunk Web (Settings>Server Controls).
-* Run the command splunk offline, followed by splunk start.
+* Run the command __'splunk offline'__, followed by __'splunk start'__.
 
 When you use Splunk Web or the splunk offline/splunk start commands to restart a peer, the master waits 60 seconds (by default) before assuming that the peer has gone down for good. This allows sufficient time for the peer to come back on-line and prevents the cluster from performing unnecessary remedial activities.
+
+### Managing Configurations Across Peers <a name="managing_peer_configs"></a>
+
+
+```splunk apply cluster-bundle```
+
+
+#### Configuring Indexes on a Cluster <a name="configuring_indexes_cluster"></a>
+
+If you are using a index cluster, you must configure custom indexes in the indexes.conf on the Cluster Master in the application-specific directory under the ```/opt/splunk/etc/master-apps/...``` directory.
+
+The ```maxTotalDataSizeMB``` and ```frozenTimePeriodInSecs``` attributes in indexes.conf determine when buckets roll from cold to frozen. 
+
+If you set the coldToFrozenDir attribute in indexes.conf, the indexer will automatically copy frozen buckets to the specified location before erasing the data from the index.
+
+The following is an example of typical custom index entries in an indexes.conf file:  
+```
+[<index_name>]
+homePath   = volume:primary/index_name/db
+coldPath   = volume:primary/index_name/colddb
+thawedPath = $SPLUNK_DB/index_name/thaweddb
+# Seting the repFactor attribute to "auto" causes the index's data to be replicated to other peers in the cluster
+# By default, repFactor is set to 0, which means that the index will not be replicated
+repFactor = auto
+# index size of 30 GB = 30 x 1024 MB
+maxTotalDataSizeMB = 30720
+# only keep data for 30 days before archiving (default is 6 years)
+frozenTimePeriodInSecs = 2592000
+# you can specify a frozen archive location
+# if no fozen archive location is specified, the data is discarded
+# coldToFrozenDir = "<path to frozen archive>"
+```
 
 __Cluster Master failure__
 
@@ -488,8 +507,6 @@ The knowledge bundle gets distributed to the ```$SPLUNK_HOME/var/run/searchpeers
 On a search head cluster, you can view replication status from the search head cluster captain:  
 Settings > Distributed Search > Search Peers  
 
-
-
 [top](#toc)
 
 
@@ -497,10 +514,17 @@ Settings > Distributed Search > Search Peers
 
 Note: You can use deployment server to distribute updates to search heads in indexer clusters, as long as they are standalone search heads. You cannot use the deployment server to distribute updates to members of a search head cluster - you must use a Deployer.  
 
+[top](#toc)
+
+## Create a License Server <a name="create_lic_server"></a>
+
+#### Licenses for distributed search <a name="search_licenses"></a>
+
+Each instance in a distributed search deployment must have access to a license pool. This is true for both search heads and search peers. See Licenses for search heads in Admin Manual.
 
 [top](#toc)
 
-## Install a Universal Forwarder
+## Install a Universal Forwarder <a name="install_uf"></a>
 
 Forward data to an indexer
 To forward remote data to an indexer, you use forwarders, which are Splunk Enterprise instances that receive data inputs and then consolidate and send the data to a Splunk Enterprise indexer.  
@@ -519,25 +543,10 @@ For most types of cluster deployments, you should enable indexer acknowledgment 
 
 You can simplify the process of connecting forwarders to peer nodes by using the indexer discovery feature.
 
-
 Add data inputs to the search peers. You add inputs in the same way as for any indexer, either directly on the indexer or through forwarders connecting to the indexer(s).
 (what need to be done on each indexer - inputs.conf?)
 
-
 [top](#toc)
-
-## Other Considerations <a name="other"></a>
-
-#### Licenses for distributed search <a name="search_licenses"></a>
-
-Each instance in a distributed search deployment must have access to a license pool. This is true for both search heads and search peers. See Licenses for search heads in Admin Manual.
-
-#### Synchronize system clocks across the distributed search environment <a name="clocks"></a>
-
-Synchronize the system clocks on all machines, virtual or physical, that are running Splunk Enterprise distributed search instances. Specifically, this means your search heads and search peers. In the case of search head pooling or mounted bundles, this also includes the shared storage hardware. Otherwise, various issues can arise, such as bundle replication failures, search failures, or premature expiration of search artifacts.
-
-The synchronization method that you use depends on your specific set of machines. Consult the system documentation for the particular machines and operating systems on which you are running Splunk Enterprise. For most environments, Network Time Protocol (NTP) is the best approach.
-
 
 ## Splunk Common Network Ports <a name="network_ports"></a>
 
@@ -546,5 +555,7 @@ The synchronization method that you use depends on your specific set of machines
 The image above was obtained from <a href="http://jordan2000.com/splunk-common-network-ports/" target="_blank">Job Jordan's Blog: http://jordan2000.com/splunk-common-network-ports</a>
 
 Other images in this document were obtained and/or modified from images copied from Splunk documentation. Splunk is not responsible for any inaccuracies introduced by my modifications.
+
+[top](#toc)
 
 > Written with [StackEdit](https://stackedit.io/).
