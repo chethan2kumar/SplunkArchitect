@@ -15,15 +15,18 @@
 
 2. [Overview of a Clustered Splunk Environment](#clustered_overview)
 	* [Indexer Clustering](#indexer_clustering)
-		* [Managing an Indexer Cluster](#managing_indexer_cluster)
+	* [Managing an Indexer Cluster](#managing_indexer_cluster)
 	* [Distributed Search](#distributed_search)
-	*  
 
-3. [Create a Splunk Search Head](#create_search_head)
+3. [Create a Splunk Indexer](#create_indexer)
+	[Multisite indexer clusters](#multisite_clusters)
+	
+4. [Create a Cluster Master](#create_cluster_master)
 
-4. [Create a Splunk Indexer](#create_indexer)
-
+5. [Create a Splunk Search Head](#create_search_head)
 	[Index Time vs Search Time Processing](#index_vs_search)
+
+
 
 ## Installing Splunk Enterprise on Linux <a name="install_splunk"></a>
 All Splunk components except a Universal Forwarder ( a separate lightweight package ) are based on an installation of Splunk Enterprise with specific configuration options - so the first step in creating any component in a Splunk solution is installing Splunk Enterprise.  
@@ -161,7 +164,7 @@ If you are using a standalone instance of Splunk Enterprise you may want to appl
 
 ### Indexer Clustering <a name="indexer_clustering"></a> 
 
-Splunk supports the concept of utilizing multiple indexers in an 'index cluster' to allow setting a 'replication factor' which creates multiple, redundant copies of rawdata files across multiple indexers so that if an indexer fails data is not lost, and 'search factor' wherein multiple copies of data indexes are distributed so that search performance is not affected if an indexer fails.
+Splunk supports the concept of utilizing multiple indexers in an 'index cluster' to increase indexing capability and to allow setting a 'replication factor' which creates multiple, redundant copies of rawdata files across multiple indexers so that if an indexer fails data is not lost, as well as a 'search factor' wherein multiple copies of data indexes are distributed as well so that search performance is not affected if an indexer fails.
 
 The image below depicts a simple clustered indexer solution:
 
@@ -171,12 +174,11 @@ There are two types of nodes in an indexer cluster:
 
 *  A single Cluster Master to manage the cluster. This 'master node' is a specialized type of indexer that, while it doesn't participate in any data streaming, coordinates a range of activities involving the search peers and the search head, including coordinating which 'buckets' are replicated across the peer nodes for redundancy.
 
-* Several 'peer nodes' that handle the indexing function for the cluster, indexing and maintaining multiple copies of the rawdata and index files, and running searches across the data.
+* Several 'peer nodes' (indexers) that handle the indexing function for the cluster, indexing and maintaining multiple copies of the rawdata and index files, and running searches across the data.
 
-#### Managing an Indexer Cluster <a name="managing_indexer_cluster"></a>
+### Managing an Indexer Cluster <a name="managing_indexer_cluster"></a>
 
 If you are using a index cluster, you must configure custom indexes in the indexes.conf on the Cluster Master in the application-specific directory under the ```/opt/splunk/etc/master-apps/...``` directory.
-
 
 The ```maxTotalDataSizeMB``` and ```frozenTimePeriodInSecs``` attributes in indexes.conf determine when buckets roll from cold to frozen. 
 
@@ -223,55 +225,11 @@ The knowledge bundle gets distributed to the ```$SPLUNK_HOME/var/run/searchpeers
 On a search head cluster, you can view replication status from the search head cluster captain:  
 Settings > Distributed Search > Search Peers  
 
-
-
-[top](#toc)
-
-## Create a Splunk Search Head <a name="create_search_head"></a>
-
-
-__Distributed search__
-
-To set up a simple distributed search topology, consisting of a single dedicated search head and several search peers, perform these steps:
-
-1. Designate a Splunk Enterprise instance as the search head. Since distributed search is enabled automatically on every full Splunk Enterprise instance, you do not actually perform any action in this step, aside from choosing the instance that you want to be your search head.
-
-2. Establish connections from the search head to all the search peers that you want it to search across. This is the key step in the procedure:
-
-__See Add search peers to the search head.__
-
-
-5. Forward the search head's internal data to the search peers. See Best practice: Forward search head data to the indexer layer.
-
-Create an outputs.conf file on the search head that configures the search head for load-balanced forwarding across the set of search peers (indexers). You must also turn off indexing on the search head, so that the search head does not both retain the data locally as well as forward it to the search peers.
-
-Here is an example outputs.conf file:
-```
-# Turn off indexing on the search head
-[indexAndForward]
-index = false
- 
-[tcpout]
-defaultGroup = my_search_peers 
-forwardedindex.filter.disable = true  
-indexAndForward = false 
- 
-[tcpout:my_search_peers]
-server=10.10.10.1:9997,10.10.10.2:9997,10.10.10.3:9997
-autoLB = true
-```
-
-Log in to the search head and perform a search that runs across all the search peers, such as a search for *. Examine the 'splunk_server' field in the results to verify that all the search peers are listed in that field.
-
-To increase the search management capacity, deploy multiple search heads as members of a search head cluster.
-
 [top](#toc)
 
 ## Create a Splunk Indexer <a name="create_indexer"></a>
 
-Add data inputs to the search peers. You add inputs in the same way as for any indexer, either directly on the search peer or through forwarders connecting to the search peer. See the Getting Data In manual for information on data inputs.
-
-__About Indexers__
+Add data inputs to the search peers. You add inputs in the same way as for any indexer, either directly on the indexer or through forwarders connecting to the indexer(s).
 
 Splunk Enterprise stores all of the data it processes in indexes. An index is a collection of databases, which are subdirectories located in ```$SPLUNK_HOME/var/lib/splunk```. Indexes consist of two types of files: compressed rawdata files and index files. 
 
@@ -310,8 +268,157 @@ Search-time processes take place while a search is run, as events are collected 
 * Source type renaming
 * Tagging  
 
+### Multisite indexer clusters <a name="multisite_clusters"></a>
+
+Multisite indexer clusters allow you to maintain complete copies of your indexed data in multiple locations. This offers the advantages of enhanced disaster recovery and search affinity. You can specify the number of copies of data on each site. Multisite clusters are similar in most respects to basic, single-site clusters, with some differences in configuration and behavior. 
+
+For multisite clusters, you must also take into account the search head and peer node requirements of each site, as determined by your search affinity and disaster recovery needs. At a minimum, you will need (replication factor + 2) instances.
+
+__Configure the master node__  
+
+You configure the key attributes for the entire cluster on the master node. Here is an example of a multisite configuration for a master node:
+
+```
+[general]
+site = site1
+
+[clustering]
+mode = master
+multisite = true
+available_sites = site1,site2
+site_replication_factor = origin:2,total:3
+site_search_factor = origin:1,total:2
+pass4SymmKey = whatever
+cluster_label = cluster1
+```
+
+This example specifies that:
+
+* the instance is located on site1.
+* the instance is a cluster master node.
+* the cluster is multisite.
+* the cluster consists of two sites: site1 and site2.
+* the cluster's replication factor is the default "origin:2,total:3".
+* the cluster's search factor is "origin:1,total:2".
+* the cluster's security key is "whatever".
+* the cluster label is "cluster1."
+ 
+ Note the following:  
+* You specify the site attribute in the [general] stanza.
+* You specify all other multisite attributes in the [clustering] stanza.
+* You can locate the master on any site in the cluster, but each cluster has only one master.
+* You must set multisite=true.
+* You must list all cluster sites in the available_sites attribute.
+* You must set a site_replication_factor and a site_search_factor. For details, see Configure the site replication factor and Configure the site search factor.
+* The pass4SymmKey attribute, which sets the security key, must be the same across all cluster nodes. See Configure the indexer cluster with server.conf for details.
+* The cluster label is optional. It is useful for identifying the cluster in the monitoring console. 
+
+## Create a Cluster Master <a name="create_cluster_master"></a>
+
+If you are going to create a indexer cluster, you must also create a 'master node' (Splunk nomenclature), aka a Cluster Master. 
+
+To enable a Splunk Enterprise instance as the master node:
+
+1. Click Settings in the upper right corner of Splunk Web.
+2. In the Distributed environment group, click Indexer clustering.
+3. Select Enable indexer clustering.
+4. Select Master node and click Next.
+5. There are a few fields to fill out:
+
+* Replication Factor. The replication factor determines how many copies of data the cluster maintains. The default is 3. Be sure to choose the right replication factor now. It is inadvisable to increase the replication factor later, after the cluster contains significant amounts of data.  
+
+* Search Factor. The search factor determines how many immediately searchable copies of data the cluster maintains. The default is 2. Be sure to choose the right search factor now. It is inadvisable to increase the search factor later, once the cluster has significant amounts of data.  
+
+* Security Key. This is the key that authenticates communication between the master and the peers and search heads. The key must be the same across all cluster nodes. The value that you set here must be the same that you subsequently set on the peers and search heads as well.  
+
+* Cluster Label. You can label the cluster here. The label is useful for identifying the cluster in the monitoring console. See Set cluster labels in Monitoring Splunk Enterprise.
+
+6. Click Enable master node. The message appears, "You must restart Splunk for the master node to become active. You can restart Splunk from Server Controls."
+
+7. Create an outputs.conf file in ```/opt/splunk/etc/system/local/``` on the master node that configures it for load-balanced forwarding across the set of peer nodes. You must also turn off indexing on the master, so that the master does not both retain the data locally as well as forward it to the peers.
+
+	Here is an example outputs.conf file that accomplishes these requirements:
+```
+# Turn off indexing on the master
+[indexAndForward]
+index = false
+ 
+[tcpout]
+defaultGroup = my_peers_nodes 
+forwardedindex.filter.disable = true  
+indexAndForward = false 
+ 
+[tcpout:my_peers_nodes]
+server=10.10.10.1:9997,10.10.10.2:9997,10.10.10.3:9997
+autoLB = true
+```
+
+8. Click Go to Server Controls. This takes you to the Settings page where you can initiate the restart.
+
+	Important: When the master starts up for the first time, it will block indexing on the peers until you enable and restart the full replication factor number of peers. Do not restart the master while it is waiting for the peers to join the cluster. If you do, you will need to restart the peers a second time.
+
+9. After the restart, log back into the master and return to the Clustering page in Splunk Web (Settings > Indexer Clustering>). You will see the master clustering dashboard. 
+
+__Configuring a Cluster Master using server.conf__
+
+Enabling a Cluster Master or editing its configuration can also be done in ```/opt/splunk/etc/system/local/server.conf```:
+
+```
+[clustering]
+mode = master
+replication_factor = 4
+search_factor = 3
+pass4SymmKey = whatever
+cluster_label = cluster1
+```
+
+__Cluster Master failure__
+
+If a master node goes down, peer nodes can continue to index and replicate data, and the search head can continue to search across the data, for some period of time. Problems eventually will arise, however, particularly if one of the peers goes down. There is no way to recover from peer loss without the master, and the search head will then be searching across an incomplete set of data. Generally speaking, the cluster continues as best it can without the master, but the system is in an inconsistent state and results cannot be guaranteed.
 
 [top](#toc)
+
+## Create a Splunk Search Head <a name="create_search_head"></a>
+
+__Distributed search__
+
+To set up a simple distributed search topology, consisting of a single dedicated search head and several search peers, perform these steps:
+
+1. Designate a Splunk Enterprise instance as the search head. Since distributed search is enabled automatically on every full Splunk Enterprise instance, you do not actually perform any action in this step, aside from choosing the instance that you want to be your search head.
+
+2. Establish connections from the search head to all the search peers that you want it to search across. This is the key step in the procedure:
+
+__See Add search peers to the search head.__
+
+
+3. Forward the search head's internal data to the search peers (indexers):
+
+* Create an outputs.conf file on the search head that configures the search head for load-balanced forwarding across the set of search peers (indexers).  
+
+* Turn off indexing on the search head, so that the search head does not both retain the data locally as well as forward it to the search peers.
+
+Here is an example outputs.conf file:
+```
+# Turn off indexing on the search head
+[indexAndForward]
+index = false
+ 
+[tcpout]
+defaultGroup = my_search_peers 
+forwardedindex.filter.disable = true  
+indexAndForward = false 
+ 
+[tcpout:my_search_peers]
+server=10.10.10.1:9997,10.10.10.2:9997,10.10.10.3:9997
+autoLB = true
+```
+
+4. Log in to the search head and perform a search that runs across all the search peers, such as a search for *. Examine the 'splunk_server' field in the results to verify that all the search peers are listed in that field.
+
+To increase the search management capacity, deploy multiple search heads as members of a search head cluster.
+
+[top](#toc)
+
 
 ## Create a Deployment Server
 
