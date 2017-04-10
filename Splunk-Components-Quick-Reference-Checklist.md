@@ -44,6 +44,22 @@ __Login to Splunk Web__
 ```http://<yourservername>:8000/```
 admin - changeme - MyNewPassword  
 
+__Uninstalling Splunk on Linux__
+
+__Uninstalling Splunk on Linux__
+
+Get package name:
+```rpm -q -a | grep -i splunk```
+
+Uninstall:
+```rpm -e <packageName>```
+Example:
+```rpm -e splunk-6.5.3-36937ad027d4.x86_64```
+
+Clean up remaining files/directory:
+```cd /opt```
+```rm -rf ./splunk```
+
 
 
 

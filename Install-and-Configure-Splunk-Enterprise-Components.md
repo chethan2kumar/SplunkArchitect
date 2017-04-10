@@ -14,32 +14,33 @@
 	* [Synchronize system clocks across the distributed search environment](#clocks)
 	* [Forward internal data to search peers](#fwd_internal_data)
  
+2. [Uninstalling Splunk Enterprise on Linux](#uninstall_splunk)
 
-2. [Overview of a Clustered Splunk Environment](#clustered_overview)
+3. [Overview of a Clustered Splunk Environment](#clustered_overview)
 	* [Index Time vs Search Time Processing](#index_vs_search)
 
-3. [Create a Splunk Indexer](#create_indexer)
+4. [Create a Splunk Indexer](#create_indexer)
 	* [Configure inputs directly on the peers](#direct_inputs) 
 	* [Multisite indexer clusters](#multisite_clusters)
 	
-4. [Create a Cluster Master](#create_cluster_master)
+5. [Create a Cluster Master](#create_cluster_master)
 	* [Managing Configurations Across Peers](#managing_peer_configs)
 	* [Configuring Indexes on a Cluster](#configuring_indexes_cluster)
 
-5. [Create a Splunk Search Head](#create_search_head)
+6. [Create a Splunk Search Head](#create_search_head)
 	* [Distributed search with single dedicated search head](#dist_search)
 	* [Creating a Search Head Cluster](#distributed_search)
 
-6. [Create a Deployment Server](#create_deployment_svr)
+7. [Create a Deployment Server](#create_deployment_svr)
 
-7. [Create a Deployer](#create_deployer)
+8. [Create a Deployer](#create_deployer)
 
-8. [Create a License Server](#create_lic_svr)
+9. [Create a License Server](#create_lic_svr)
 	* [Licenses for distributed search](#search_licenses)
 
-9. [Install a Universal Forwarder](#install_uf)
+10. [Install a Universal Forwarder](#install_uf)
 
-10. [Splunk Common Network Ports](#network_ports)
+11. [Splunk Common Network Ports](#network_ports)
 
 
 ## Installing Splunk Enterprise on Linux <a name="install_splunk"></a>
@@ -201,6 +202,20 @@ The following sections outline how to configure instances of Splunk Enterprise t
 It may be helpful to read the section '[Overview of a Clustered Splunk Environment](#clustered_overview)' below before progressing to specific component configuration.
 
 If you are using a standalone instance of Splunk Enterprise you may want to apply some of the function-specific settings outlined in the following sections. Generic settings that may be applied to any Splunk solution will be indicated.
+
+__Uninstalling Splunk on Linux__
+
+Get package name:
+```rpm -q -a | grep -i splunk```
+
+Uninstall:
+```rpm -e <packageName>```
+Example:
+```rpm -e splunk-6.5.3-36937ad027d4.x86_64```
+
+Clean up remaining files/directory:
+```cd /opt```
+```rm -rf ./splunk```
 
 [top](#toc)
 
