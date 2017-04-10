@@ -11,7 +11,9 @@
 	* [Set the environment variable for $SPLUNK_HOME](#set_env)
 	* [Change the default Splunk Web port from 8000 to 8080 (Optional)](#set_port_8080)
 	* [Configure Splunk Web to use SSL (Recommended)](#set_ssl)
-	* [Synchronize system clocks across the distributed search environment](#clocks) 
+	* [Synchronize system clocks across the distributed search environment](#clocks)
+	* [Forward internal data to search peers](#fwd_internal_data)
+ 
 
 2. [Overview of a Clustered Splunk Environment](#clustered_overview)
 	* [Index Time vs Search Time Processing](#index_vs_search)
@@ -26,7 +28,6 @@
 
 5. [Create a Splunk Search Head](#create_search_head)
 	* [Distributed search with single dedicated search head](#dist_search)
-	* [Forward internal data to search peers](#fwd_internal_data)
 	* [Creating a Search Head Cluster](#distributed_search)
 
 6. [Create a Deployment Server](#create_deployment_svr)
@@ -53,6 +54,7 @@ __Note: You will have to create an account and/or login using your Splunk user I
 
 * Select and download the appropriate rpm package (...x86_64.rpm)
 * Use ftp or WinSCP to copy the package to the splunk server.  
+* ```sudo su```  (root)
 * Change permissions on the file:
 previous:  
 ```-rw-------. 1 baxtj018 admin 226438185 Apr  7 15:13 splunk-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm```
@@ -61,7 +63,7 @@ previous:
 
 ### Installing the Splunk package <a name="install_package"></a>
 
-```sudo rpm -i splunk-6.5.1-f74036626f0c-linux-2.6-x86_64.rpm  ```
+```rpm -i splunk-6.5.1-f74036626f0c-linux-2.6-x86_64.rpm  ```
 
 You may see:  
 warning: splunk-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm: Header V4 DSA/SHA1 Signature, key ID 653fb112: NOKEY  
@@ -144,30 +146,6 @@ This adds the following to opt/splunk/etc/system/local/web.conf
 	[settings]
 	httpport = 8080  
 
-#### Forward internal data to search peers <a name="fwd_internal_data"></a>
-
-You will want to forward internal log data (_internal, _audit, etc.) of any Splunk component in a distributed environment  to the indexer cluster so that this data can be searched, as follows:
-
-* Create or edit an outputs.conf file in ```/opt/splunk/etc/system/local/``` that configures the search head for load-balanced forwarding across the set of search peers (indexers).  
-
-* Turn off indexing on the Splunk component so that it does not both retain the data locally as well as forward it to the search peers.
-
-Here is an example outputs.conf file:
-```
-# Turn off indexing (except on indexers)
-[indexAndForward]
-index = false
- 
-[tcpout]
-defaultGroup = my_search_peers 
-forwardedindex.filter.disable = true  
-indexAndForward = false 
- 
-[tcpout:my_search_peers]
-server=10.10.10.1:9997,10.10.10.2:9997,10.10.10.3:9997
-autoLB = true
-```
-
 ### Configure Splunk Web to use SSL (Recommended) <a name="set_ssl"></a>
 
 From Splunk Web:
@@ -191,6 +169,30 @@ enableSplunkWebSSL = true
 Synchronize the system clocks on all machines, virtual or physical, that are running Splunk Enterprise distributed search instances. Specifically, this means your search heads and search peers. In the case of search head pooling or mounted bundles, this also includes the shared storage hardware. Otherwise, various issues can arise, such as bundle replication failures, search failures, or premature expiration of search artifacts.
 
 The synchronization method that you use depends on your specific set of machines. For most environments, Network Time Protocol (NTP) is the best approach.
+
+#### Forward internal data to search peers <a name="fwd_internal_data"></a>
+
+You will want to forward internal log data (_internal, _audit, etc.) of any Splunk component in a distributed environment (except Universal Forwarders) to the indexer cluster so that this data can be searched, as follows:
+
+* Create or edit an outputs.conf file in ```/opt/splunk/etc/system/local/``` that configures the search head for load-balanced forwarding across the set of search peers (indexers).  
+
+* Turn off indexing on the Splunk component so that it does not both retain the data locally as well as forward it to the search peers.
+
+Here is an example outputs.conf file:
+```
+# Turn off indexing (except on indexers)
+[indexAndForward]
+index = false
+ 
+[tcpout]
+defaultGroup = my_search_peers 
+forwardedindex.filter.disable = true  
+indexAndForward = false 
+ 
+[tcpout:my_search_peers]
+server=10.10.10.1:9997,10.10.10.2:9997,10.10.10.3:9997
+autoLB = true
+```
 
 __You are now ready to customize this instance of Splunk Enterprise for a specific function__
 
