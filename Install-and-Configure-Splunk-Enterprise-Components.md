@@ -1,4 +1,3 @@
-
 # Install and Configure Splunk Enterprise Components
 
 ### Contents <a name="toc"></a>
@@ -15,10 +14,10 @@
 	* [Synchronize system clocks across the distributed search environment](#clocks) 
 
 2. [Overview of a Clustered Splunk Environment](#clustered_overview)
-	* [Indexer Clustering](#indexer_clustering)
-
+	* [Index Time vs Search Time Processing](#index_vs_search)
 
 3. [Create a Splunk Indexer](#create_indexer)
+	* [Configure inputs directly on the peers](#direct_inputs) 
 	* [Multisite indexer clusters](#multisite_clusters)
 	
 4. [Create a Cluster Master](#create_cluster_master)
@@ -26,8 +25,9 @@
 	* [Configuring Indexes on a Cluster](#configuring_indexes_cluster)
 
 5. [Create a Splunk Search Head](#create_search_head)
-	* [Index Time vs Search Time Processing](#index_vs_search)
-	* [Distributed Search](#distributed_search)
+	* [Distributed search with single dedicated search head](#dist_search)
+	* [Forward internal data to search peers](#fwd_internal_data)
+	* [Creating a Search Head Cluster](#distributed_search)
 
 6. [Create a Deployment Server](#create_deployment_svr)
 
@@ -144,6 +144,29 @@ This adds the following to opt/splunk/etc/system/local/web.conf
 	[settings]
 	httpport = 8080  
 
+#### Forward internal data to search peers <a name="fwd_internal_data"></a>
+
+You will want to forward internal log data (_internal, _audit, etc.) of any Splunk component in a distributed environment  to the indexer cluster so that this data can be searched, as follows:
+
+* Create or edit an outputs.conf file in ```/opt/splunk/etc/system/local/``` that configures the search head for load-balanced forwarding across the set of search peers (indexers).  
+
+* Turn off indexing on the Splunk component so that it does not both retain the data locally as well as forward it to the search peers.
+
+Here is an example outputs.conf file:
+```
+# Turn off indexing (except on indexers)
+[indexAndForward]
+index = false
+ 
+[tcpout]
+defaultGroup = my_search_peers 
+forwardedindex.filter.disable = true  
+indexAndForward = false 
+ 
+[tcpout:my_search_peers]
+server=10.10.10.1:9997,10.10.10.2:9997,10.10.10.3:9997
+autoLB = true
+```
 
 ### Configure Splunk Web to use SSL (Recommended) <a name="set_ssl"></a>
 
@@ -181,7 +204,7 @@ If you are using a standalone instance of Splunk Enterprise you may want to appl
 
 ## Overview of a Clustered Splunk Solution <a name="clustered_overview"></a>
 
-### Indexer Clustering <a name="indexer_clustering"></a> 
+__Indexer clustering__
 
 Splunk supports the concept of utilizing multiple indexers in an 'index cluster' to increase indexing capability and to allow setting a 'replication factor' which creates multiple, redundant copies of rawdata files across multiple indexers so that if an indexer fails data is not lost, as well as a 'search factor' wherein multiple copies of data indexes are distributed as well so that search performance is not affected if an indexer fails.
 
@@ -282,6 +305,12 @@ This example specifies that:
 * the instance is a cluster peer ("slave") node.
 * the security key is "whatever".
 
+### Configure inputs directly on the peers <a name="direct_inputs"></a>
+
+If you decide not to use forwarders to handle your data inputs, you can set up inputs on each peer in the usual way; for example, by editing inputs.conf on the peers. 
+
+
+
 ### Multisite indexer clusters <a name="multisite_clusters"></a>
 
 Multisite indexer clusters allow you to maintain complete copies of your indexed data in multiple locations. This offers the advantages of enhanced disaster recovery and search affinity. You can specify the number of copies of data on each site. Multisite clusters are similar in most respects to basic, single-site clusters, with some differences in configuration and behavior. 
@@ -353,21 +382,7 @@ __To configure a Splunk Enterprise instance as the Cluster Master / master node:
 
 7. Create an outputs.conf file in ```/opt/splunk/etc/system/local/``` on the master node that configures it for load-balanced forwarding of its internal log files across the set of peer nodes. You must also turn off indexing on the master, so that the master does not both retain the data locally as well as forward it to the peers.
 
-	Here is an example outputs.conf file that accomplishes these requirements:
-```
-# Turn off indexing on the master
-[indexAndForward]
-index = false
- 
-[tcpout]
-defaultGroup = my_peers_nodes 
-forwardedindex.filter.disable = true  
-indexAndForward = false 
- 
-[tcpout:my_peers_nodes]
-server=10.10.10.1:9997,10.10.10.2:9997,10.10.10.3:9997
-autoLB = true
-```
+	[Forward internal data to search peers](#fwd_internal_data)
 
 8. Click Go to Server Controls. This takes you to the Settings page where you can initiate the restart.
 
@@ -541,24 +556,9 @@ __Configure a Splunk instance as a search head in an indexer cluster:__
 
 8. After the restart, log back into the search head and return to the Clustering page in Splunk Web. This time, you see the search head's clustering dashboard.  
 
-9. Configure the search head as a forwarder. Create an outputs.conf file on the search head that configures the search head for load-balanced forwarding across the set of search peers (indexers). You must also turn off indexing on the search head, so that the search head does not both retain the data locally as well as forward it to the search peers.
+9. Create an outputs.conf file on the search head that configures the search head for load-balanced forwarding across the set of search peers (indexers). You must also turn off indexing on the search head, so that the search head does not both retain the data locally as well as forward it to the search peers.
 
-	Here is an example outputs.conf file:
-```
-# Turn off indexing on the search head
-[indexAndForward]
-index = false
- 
-[tcpout]
-defaultGroup = my_search_peers 
-forwardedindex.filter.disable = true  
-indexAndForward = false 
- 
-[tcpout:my_search_peers]
-server=10.10.10.1:9997,10.10.10.2:9997,10.10.10.3:9997
-autoLB = true
-This example assumes that each indexer's receiving port is set to 9997.
-```
+	[Forward internal data to search peers](#fwd_internal_data)
 
 __Creating a search head by editing server.conf:__
 
@@ -575,7 +575,9 @@ This example specifies that:
 * the instance is a cluster search head.
 * the security key is "whatever".
 
-__Distributed search with single dedicated search head and several search peers__
+### Distributed search with single dedicated search head <a name="dist_search"></a>
+
+This is a configuration with a single dedicated search head connected to an indexer cluster.  
 
 1. Designate a Splunk Enterprise instance as the search head. Since distributed search is enabled automatically on every full Splunk Enterprise instance, you do not actually perform any action in this step, aside from choosing the instance that you want to be your search head.
 
@@ -589,30 +591,6 @@ __Distributed search with single dedicated search head and several search peers_
 * Save
 * Repeat for each of the search head's search peers.
 
-
-
-__Forward the search head's internal data to the search peers (indexers):__
-
-* Create an outputs.conf file on the search head that configures the search head for load-balanced forwarding across the set of search peers (indexers).  
-
-* Turn off indexing on the search head, so that the search head does not both retain the data locally as well as forward it to the search peers.
-
-Here is an example outputs.conf file:
-```
-# Turn off indexing on the search head
-[indexAndForward]
-index = false
- 
-[tcpout]
-defaultGroup = my_search_peers 
-forwardedindex.filter.disable = true  
-indexAndForward = false 
- 
-[tcpout:my_search_peers]
-server=10.10.10.1:9997,10.10.10.2:9997,10.10.10.3:9997
-autoLB = true
-```
-
 4. Log in to the search head and perform a search that runs across all the search peers, such as a search for *. Examine the 'splunk_server' field in the results to verify that all the search peers are listed in that field.
 
 To increase the search management capacity, deploy multiple search heads as members of a search head cluster.
@@ -624,6 +602,10 @@ A search head cluster is a group of search heads that work together to provide s
 The search heads in a cluster are, for most purposes, interchangeable. All search heads have access to the same set of search peers. They can also run or access the same searches, dashboards, knowledge objects, and so on.
 
 In each case, the search heads perform only the search management and presentation functions. They connect to search peers (indexers) that index data and search across the indexed data.
+
+This configuration is depicted in the following image: 
+
+![Search Head Cluster with Indexer Cluster](/images/SH_cluster_with_Indexer_Cluster.png)  
 
 When initiating a distributed search, the search head replicates and distributes its knowledge objects to its search peers (indexers) so that they can properly execute queries on its behalf. Knowledge objects include saved searches, event types, and other entities used in searching across indexes; this set of knowledge objects is called the knowledge bundle.
 
@@ -638,32 +620,162 @@ The knowledge bundle gets distributed to the ```$SPLUNK_HOME/var/run/searchpeers
 On a search head cluster, you can view replication status from the search head cluster captain:  
 Settings > Distributed Search > Search Peers  
 
+__Configure a Search Head cluster__
 
-__Forward the search head's internal data to the search peers (indexers):__
+__Required number of instances__
 
-The steps for configuring a search head to forward its internal data were outlined in the previous section. 
+The cluster must contain at a minimum the number of members needed to fulfill both of these requirements:
 
-You perform the same configuration steps to forward data from search head cluster members to their set of search peers. *However, you must ensure that all members use the same outputs.conf file*. To do so, do not edit the file on the individual search heads. Instead, __use a deployer to propagate the file across the search head cluster__.
+* Three members, so that the cluster can continue to function if one member goes down. See Captain election process has deployment implications.
+* The replication factor number of instances. See Choose the replication factor for the search head cluster. For example, if your replication factor is either 2 or 3, you need at least three instances. If your replication factor is 5, you need at least five instances.
+
+You can optionally add more members to boost search and user capacity. Search head clustering supports up to 50 members in a single cluster.
+
+__Ports that the cluster members use__
+
+These ports must be available on each member:
+
+* The management port (by default, 8089) must be available to all other members.
+* The http port (by default, 8000) must be available to any browsers accessing data from the member.
+* The KV store port (by default, 8191) must be available to all other members. You can use the CLI command ```splunk show kvstore-port``` to identify the port number.
+* The replication port must be available to all other members.
+
+These ports must be in your firewall's list of allowed ports.
+
+Caution: Do not change the management port on any of the members while they are participating in the cluster. If you need to change the management port, you must first remove the member from the cluster.
+
+__Deployer__
+
+To update member configurations of a search head cluster, you need a Splunk Enterprise instance that functions as the deployer. 
+
+[Create a Deployer](#create_deployer)
+
+__Search Head Pools__
+You cannot enable search head clustering on an instance that is part of a search head pool. For information on migrating, see <a href="http://docs.splunk.com/Documentation/Splunk/6.5.3/DistSearch/Migratefromsearchheadpooling" target="_blank">Migrate from a search head pool to a search head cluster</a>
+
+
+__Edit distsearch.conf__
+
+The settings available through Splunk Web provide sufficient options for most configurations.   Some advanced configuration settings, however, are only available by directly editing distsearch.conf. This section discusses only the configuration settings necessary for connecting search heads to search peers. For information on the advanced configuration options, see the distsearch.conf spec file.  
+
+__Add the search peers__
+
+1. On the search head, create or edit a distsearch.conf file in ```$SPLUNK_HOME/etc/system/local```.
+
+2. Add the search peers to the servers setting under the [distributedSearch] stanza. Specify the peers as a set of comma-separated values (host names or IP addresses with management ports). For example:
+	```
+	[distributedSearch]
+	servers = https://192.168.1.1:8089,https://192.168.1.2:8089
+	```
+	Note: You must precede the host name or IP address with the URI scheme, either "http" or "https".
+
+3. Restart the search head.
+
+__Distribute the key files__
+
+If you add search peers via Splunk Web or the CLI, Splunk Enterprise automatically configures authentication. However, if you add peers by editing distsearch.conf, you must distribute the key files manually. After adding the search peers and restarting the search head, as described above:
+
+* Copy the file ```$SPLUNK_HOME/etc/auth/distServerKeys/trusted.pem`` from the search head to ```$SPLUNK_HOME/etc/auth/distServerKeys/<searchhead_name>/trusted.pem``` on each search peer.
+
+	The ```<searchhead_name>``` is the search head's serverName, specified in server.conf.
+
+* Restart each search peer.
+
+__Authentication of multiple search heads from a single peer__
+
+Multiple search heads can search across a single peer. The peer must store a copy of each search head's certificate.
+
+The search peer stores the search head keys in directories with the specification ```$SPLUNK_HOME/etc/auth/distServerKeys/<searchhead_name>```.
+
+For example, if you have two search heads, named A and B, and they both need to search one particular search peer, do the following:
+
+1. On the search peer, create the directories ```$SPLUNK_HOME/etc/auth/distServerKeys/A/``` and ```$SPLUNK_HOME/etc/auth/distServerKeys/B/```.
+
+2. Copy A's trusted.pem file to ```$SPLUNK_HOME/etc/auth/distServerKeys/A/``` and B's trusted.pem to ```$SPLUNK_HOME/etc/auth/distServerKeys/B/```.
+
+3. Restart the search peer.
+
+__Forward internal logs to the search peers__
+
+Create an outputs.conf file on each search head that configures the component for load-balanced forwarding across the set of search peers (indexers). You must also turn off indexing so that the component does not both retain the data locally as well as forward it to the search peers.
+	
+[Forward internal data to search peers](#fwd_internal_data)
+
+Note: You perform the same configuration steps to forward data from search head cluster members to their set of search peers. *However, you must ensure that all members use the same outputs.conf file*. To do so, do not edit the file on the individual search heads. Instead, *use a deployer to propagate the file across the search head cluster*.
+
+__Integrate with a single-site indexer cluster__
+
+Configure each search head cluster member as a search head on the indexer cluster. Use the CLI splunk edit cluster-config command. For example:
+
+```splunk edit cluster-config -mode searchhead -master_uri https://10.152.31.202:8089 -secret newsecret123```
+
+```splunk restart```
+
+This example specifies:
+
+* The instance is a search head in an indexer cluster.
+* The master node of the indexer cluster resides at 10.152.31.202:8089.
+* The secret key is "newsecret123". You must use the same secret key across all nodes in both the indexer cluster and the search head cluster.
+
+You must do this for each member of the search head cluster.
+
+__Integrate with a multisite indexer cluster__
+
+In a multisite indexer cluster, each search head and indexer has an assigned site. Multisite indexer clustering promotes disaster recovery, because data is allocated across multiple sites. For example, you might configure two sites, one in Boston and another in New York. If one site fails, the data remains accessible through the other site.
+
+To integrate search head cluster members with a multisite indexer cluster, configure each member as a search head on the indexer cluster, as in the single-site example. The only difference is that you must also specify the site for each member. This should ordinarily be "site0", so that all search heads in the cluster perform their searches across the same set of indexers. For example:
+
+```splunk edit cluster-config -mode searchhead -site site0 -master_uri https://10.152.31.202:8089 -secret newsecret123```
+
+```splunk restart```
 
 [top](#toc)
 
-
 ## Create a Deployment Server <a name="create_deployment_svr"></a>
 
+To be completed...
 
+Note: You can use a deployment server to distribute updates to search heads in indexer clusters, as long as they are standalone search heads. You cannot use the deployment server to distribute updates to members of a search head cluster - you must use a Deployer.  
 
-Note: You can use deployment server to distribute updates to search heads in indexer clusters, as long as they are standalone search heads. You cannot use the deployment server to distribute updates to members of a search head cluster - you must use a Deployer.  
+[Forward internal data to search peers](#fwd_internal_data)
 
 [top](#toc)
 
 
 ## Create a Deployer <a name="create_deployer"></a>
 
+Deployer functionality is only for use with search head clustering, but it is built into all Splunk Enterprise instances running version 6.2 or above. The processing requirements for a deployer are fairly light, so you can usually co-locate deployer functionality on an instance performing some other function. You have several options as to the instance on which you run the deployer:
+
+* If you have a deployment server that is servicing only a small number of deployment clients (no more than 50), you can run the deployer on the same instance as the deployment server. The deployer and deployment server functionalities can interfere with each other at larger client counts. See Deployment server provisioning in Updating Splunk Enterprise Instances.
+
+* If you are running an indexer cluster, you might be able to run the deployer on the same instance as the indexer cluster master node. Whether this option is available to you depends on the master's load. See Additional roles for the master node in Managing Indexers and Clusters of Indexers for information on cluster master load limits.
+
+* If you have a monitoring console, you can run the deployer on the same instance as the console. See Which instance should host the console? in Monitoring Splunk Enteprise.
+
+* If none of the instance types enumerated above are available, run the deployer on a dedicated Splunk Enterprise instance.
+
+A deployer can service only a single search head cluster. If you have multiple clusters, you must use a separate deployer for each one. The deployers must run on separate instances.
+
+__Important:__
+
+* Do not locate deployer functionality on a search head cluster member. The deployer must run on a separate instance from any cluster member.
+
+* Do not use a deployment server to update search head cluster members; you must use a search head cluster deployer.
+
+__Creating a Deployer__
+
+To be completed...
+
+[Forward internal data to search peers](#fwd_internal_data)
 
 [top](#toc)
 
 
 ## Create a License Server <a name="create_lic_server"></a>
+
+To be completed...
+
+[Forward internal data to search peers](#fwd_internal_data)
 
 #### Licenses for distributed search <a name="search_licenses"></a>
 
