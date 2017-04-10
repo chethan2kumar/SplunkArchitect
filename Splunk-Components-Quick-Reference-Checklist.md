@@ -1,5 +1,12 @@
 # Splunk Components Quick Reference Checklist
 
+### Contents <a name="toc"></a>
+
+1. [Installing Splunk Enterprise on Linux](#install_splunk)
+2. [Uninstalling Splunk Enterprise on Linux](#uninstall_splunk)
+
+
+
 ## Installing Splunk Enterprise on Linux <a name="install_splunk"></a>
 
 Access the Splunk website to obtain the latest Splunk Enterprise installation package:
@@ -44,9 +51,8 @@ __Login to Splunk Web__
 ```http://<yourservername>:8000/```
 admin - changeme - MyNewPassword  
 
-__Uninstalling Splunk on Linux__
 
-__Uninstalling Splunk on Linux__
+## Uninstalling Splunk Enterprise on Linux <a name="uninstall_splunk"></a>
 
 Get package name:
 ```rpm -q -a | grep -i splunk```
