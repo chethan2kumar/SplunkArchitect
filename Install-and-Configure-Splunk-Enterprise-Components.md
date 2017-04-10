@@ -39,6 +39,8 @@
 	* [Licenses for distributed search](#search_licenses)
 
 10. [Install a Universal Forwarder](#install_uf)
+	* [Configuring outputs.conf](#outputs.conf)
+	* [Configuring inputs.conf](#inputs.conf)
 
 11. [Splunk Common Network Ports](#network_ports)
 
@@ -802,25 +804,61 @@ Each instance in a distributed search deployment must have access to a license p
 
 ## Install a Universal Forwarder <a name="install_uf"></a>
 
-Forward data to an indexer
+__Forwarding data to an indexer__
 To forward remote data to an indexer, you use forwarders, which are Splunk Enterprise instances that receive data inputs and then consolidate and send the data to a Splunk Enterprise indexer.  
 
 Forwarders come in two flavors:
 
-* __Universal forwarders__. These maintain a small footprint on their host machine. They perform minimal processing on the incoming data streams before forwarding them on to an indexer, also known as the receiver.
+* __Universal forwarders__. These are a separate installation package that maintains a small footprint on a host machine. They perform minimal processing on the incoming data streams before forwarding them on to an indexer, also known as the receiver.
 
-* __Heavy forwarders__. These retain most of the functionality of a full Splunk Enterprise instance. They can parse data before forwarding it to the receiving indexer, store indexed data locally, and forward the parsed data to a receiver for final indexing on that machine as well.
+* __Heavy forwarders__. These are a full installation of Splunk Enterprise and retain most of the basic functionality. They can parse data before forwarding it to the receiving indexer, store indexed data locally, and/or forward the parsed data to a receiver for final indexing on that machine as well.
 
-Both types of forwarders tag data with metadata such as host, source, and source type, before forwarding it on to the indexer.  
+Both types of forwarders tag data with metadata such as host, source, and source type before forwarding it on to the indexer.  
 
 Forwarders allow you to use resources efficiently when processing large quantities or disparate types of data coming from remote sources. They also offer capabilities for load balancing, data filtering, and routing.  
+
+__Manual Installation__
+* Access the Splunk website:  
+<a href="https://www.splunk.com/en_us/download/universal-forwarder.html#tabs/linux" target="_blank">Download Splunk Universal Forwarder</a>
+
+__Note: You will have to create an account and/or login using your Splunk user ID & password.__
+
+* Select and download the appropriate rpm package (linux > 64-bit > .rpm)
+* Use ftp or WinSCP to copy the package to the splunk server.  
+* ```sudo su```  (root)
+* Change permissions on the file:
+```chmod 744 splunkforwarder-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm```
+* Install the package
+```rpm -i splunkforwarder-<…>-linux-2.6-x86_64.rpm```
+
+* Start the Forwarder:
+```cd /opt/splunkforwarder/bin/```
+```./splunk start```
+
+
+__Remote / Automated Installation__
+You can craft an installation script using the following links as starting points:  
+
+<a href="http://docs.splunk.com/Documentation/Forwarder/6.5.3/Forwarder/Installanixuniversalforwarderremotelywithastaticconfiguration" target="_blank">docs.splunk.com/Documentation/Forwarder/6.5.3/Forwarder/Installanixuniversalforwarderremotelywithastaticconfiguration</a>
+<a href="https//answers.splunk.com/answers/34896/simple-installation-script-for-universal-forwarder" target="_blank">answers.splunk.com/answers/34896/simple-installation-script-for-universal-forwarder</a>
+<a href="https://answers.splunk.com/answers/100989/forwarder-installation-script" target="_blank">answers.splunk.com/answers/100989/forwarder-installation-script</a>
 
 For most types of cluster deployments, you should enable indexer acknowledgment for the forwarders sending data to the peer. 
 
 You can simplify the process of connecting forwarders to peer nodes by using the indexer discovery feature.
 
-Add data inputs to the search peers. You add inputs in the same way as for any indexer, either directly on the indexer or through forwarders connecting to the indexer(s).
-(what need to be done on each indexer - inputs.conf?)
+### Configuring inputs.conf <a name="inputs.conf"></a>
+
+
+
+### Configuring outputs.conf <a name="outputs.conf"></a>
+
+The universal forwarder ships with these default versions of outputs.conf:
+* One in ```$SPLUNK_HOME/etc/system/default```.
+* Another in ```$SPLUNK_HOME/etc/apps/SplunkUniversalForwarder/default```.  
+
+The default version in the SplunkUniversalForwarder app has precedence over the version under /etc/system/default. Do not edit default versions of any configuration files.
+
 
 [top](#toc)
 

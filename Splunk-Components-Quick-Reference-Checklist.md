@@ -4,6 +4,7 @@
 
 1. [Installing Splunk Enterprise on Linux](#install_splunk)
 2. [Uninstalling Splunk Enterprise on Linux](#uninstall_splunk)
+10. [Install a Universal Forwarder](#install_uf)
 
 
 
@@ -66,7 +67,19 @@ Clean up remaining files/directory:
 ```cd /opt```
 ```rm -rf ./splunk```
 
+## Install a Universal Forwarder <a name="install_uf"></a>
 
+<a href="https://www.splunk.com/en_us/download/universal-forwarder.html#tabs/linux" target="_blank">Download Splunk Universal Forwarder</a>
+
+__Note: You will have to create an account and/or login using your Splunk user ID & password.__
+
+* Select and download the appropriate rpm package (linux > 64-bit > .rpm)
+* Use ftp or WinSCP to copy the package to the splunk server.  
+* ```sudo su```  (root)
+```chmod 744 splunkforwarder-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm```
+```rpm -i splunkforwarder-<…>-linux-2.6-x86_64.rpm```
+```cd /opt/splunkforwarder/bin/```
+```./splunk start --accept-license```
 
 
 
