@@ -30,7 +30,6 @@ The lab is facilitated by a live instructor via virtual classroom. Participants 
 __Installation and Infrastructure__
 
 [Install a search head, deployment server and indexers](https://github.com/packetiq/SplunkArchitect/blob/master/Install-and-Configure-Splunk-Enterprise-Components.md)
-
 [Perform a scripted installation of universal forwarders](https://github.com/packetiq/SplunkArchitect/blob/master/Install-and-Configure-Splunk-Enterprise-Components.md#install_uf)
 
 __Configuration, Collection, and Comprehension__

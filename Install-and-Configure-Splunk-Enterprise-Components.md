@@ -37,6 +37,7 @@
 	* [Distributed search with single dedicated search head](#dist_search)
 	* [Creating a Search Head Cluster](#distributed_search)
 	* [Configure the Search Head cluster members](#configure_sh_cluster_members)
+	* [Final Steps](#final_sh_steps)
 
 7. [Create a Deployment Server](#create_deployment_svr)
 	* [Create Deployment apps](#create_deployment_apps)
@@ -936,6 +937,11 @@ multisite = true
 pass4SymmKey = <key>
 ```
 
+#### Final Steps <a name="final_sh_steps"></a>
+
+* Add users to the search heads
+* Install a load balancer in front of the search heads. This step is optional. See "Use a load balancer with search head clustering."
+* Use the deployer to distribute apps and configuration updates to the search heads.
 
 [top](#toc)
 
