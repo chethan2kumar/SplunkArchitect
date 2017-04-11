@@ -62,12 +62,20 @@ All Splunk components except a Universal Forwarder ( a separate lightweight pack
 __Note: You will have to create an account and/or login using your Splunk user ID & password.__
 
 To fetch the splunk installable directly from a target server, use wget:  
+* Select the appropriate Splunk download from the website link above
+* Cancel the download window
+* From the page that appears after the download appears, in the top-right click the link in 'Download via Command Line (wget)'
+* Copy the wget string and paste it into a command shell  
 
-```wget -O splunk-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=6.5.1&product=splunk&filename=splunk-6.5.1--------linux-2.6-x86_64.rpm&wget=true'```
+Example wget string:  
+```wget -O splunk-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=6.5.3&product=splunk&filename=splunk-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm&wget=true'```
+
 or...
-
 * Select and download the appropriate rpm package (...x86_64.rpm)
 * Use ftp or WinSCP to copy the package to the splunk server.  
+
+When you have the installation package on the target server:  
+
 * ```sudo su```  (root)
 * Change permissions on the file:
 previous:  
@@ -377,11 +385,20 @@ This example specifies that:
 * the instance is a cluster peer ("slave") node.
 * the security key is "whatever".
 
-### Configure inputs directly on the peers <a name="direct_inputs"></a>
+### Configure inputs on the peers <a name="direct_inputs"></a>
 
 If you decide not to use forwarders to handle your data inputs, you can set up inputs on each peer in the usual way; for example, by editing inputs.conf on the peers. 
 
+In Splunk Web:
+Settings > Forwarding and receiving > Configure Receiving > New
+Listen on this port: 9997
 
+When you add an input through Splunk Web, Splunk Enterprise adds that input to a copy of inputs.conf. The app context, that is, the Splunk app you are currently in when you configure the input, determines where Splunk Enterprise writes the inputs.conf file.
+
+For example, if you navigated to the Settings page directly from the Search page and then added an input, Splunk Enterprise adds the input to ```op/splunk/etc/apps/search/local/inputs.conf```:
+
+[splunktcp://9997]
+connection_host = ip
 
 [top](#toc)
 
