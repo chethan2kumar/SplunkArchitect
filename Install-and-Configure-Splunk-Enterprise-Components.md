@@ -12,11 +12,12 @@
 	* [Change the default Splunk Web port from 8000 to 8080 (Optional)](#set_port_8080)
 	* [Configure Splunk Web to use SSL (Recommended)](#set_ssl)
 	* [Synchronize system clocks across the distributed search environment](#clocks)
-	* [Forward internal data to search peers](#fwd_internal_data)
+	* [Forwarding internal data to search peers](#fwd_internal_data)
+	* [Cleaning an Index](#clean_index)
 	* [Splunk README Files](#readme)
  
 2. [Uninstalling Splunk Enterprise on Linux](#uninstall_splunk)
-
+	
 3. [Overview of a Clustered Splunk Environment](#clustered_overview)
 	* [Index Time vs Search Time Processing](#index_vs_search)
 
@@ -26,8 +27,12 @@
 	
 5. [Create a Cluster Master](#create_cluster_master)
 	* [Managing Configurations Across Peers](#managing_peer_configs)
-	* [Configuring Indexes on a Cluster](#configuring_indexes_cluster)
-
+	* [Configuring indexes.conf on a Cluster Master](#configuring_indexes_cluster)
+	* [Configuring props.conf files](#props_conf)
+	* [Configuring transforms.conf files](#transforms.conf)
+	* [Applying a cluster bundle](#apply_cluster_bundle)
+	* [Restarting a Cluster Master or peers](#restart_cm)
+	
 6. [Create a Splunk Search Head](#create_search_head)
 	* [Distributed search with single dedicated search head](#dist_search)
 	* [Creating a Search Head Cluster](#distributed_search)
@@ -179,7 +184,7 @@ Synchronize the system clocks on all machines, virtual or physical, that are run
 
 The synchronization method that you use depends on your specific set of machines. For most environments, Network Time Protocol (NTP) is the best approach.
 
-#### Forward internal data to search peers <a name="fwd_internal_data"></a>
+#### Forwarding internal data to search peers <a name="fwd_internal_data"></a>
 
 You will want to forward internal log data (_internal, _audit, etc.) of any Splunk component in a distributed environment (except Universal Forwarders) to the indexer cluster so that this data can be searched, as follows:
 
@@ -211,22 +216,46 @@ It may be helpful to read the section '[Overview of a Clustered Splunk Environme
 
 If you are using a standalone instance of Splunk Enterprise you may want to apply some of the function-specific settings outlined in the following sections. Generic settings that may be applied to any Splunk solution will be indicated.
 
+### Cleaning an Index <a name="clean_index"></a>
+__!!! DANGEROUS - CANNOT BE UNDONE!!! __
+```
+splunk stop
+To permanently remove event data from all indexes, type:
+splunk clean eventdata 
+To permanently remove event data from a single index, type:
+splunk clean eventdata -index yourindex
+splunk start
+```
+
 ### Splunk README Files <a name="readme"></a>
 
 The ```/opt/splunk/etc/system/README``` directory of any Splunk installation contains a complete set of text documents for all of the Splunk .conf files. There are two files for each configuration:
 ```
-<topic>.conf.example
-<topic>.conf.spec
+<topic>.conf.example - annotated examples
+<topic>.conf.spec - detailed description of options
 ```
 A copy of the README files for Splunk 6.5 are in the README directory of this repository.
 
-The more immediately useful of these would include:
+The more useful of these may include:
 
-[inputs.conf.example](./README/inputs.conf.example)
-[inputs.conf.spec](./README/inputs.conf.spec)
+[distsearch.conf.example](./README/distsearch.conf.example)
+[distsearch.conf.spec](./README/distsearch.conf.spec)
+[indexes.conf.example](./README/indexes.conf.example)
+[indexes.conf.spec](./README/indexes.conf.spec)
+[inputs.conf.example](./README/inputs.conf.example)  
+[inputs.conf.spec](./README/inputs.conf.spec)  
+[outputs.conf.example](./README/outputs.conf.example)  
+[outputs.conf.spec](./README/outputs.conf.spec)  
+[props.conf.example](./README/props.conf.example)
+[props.conf.spec](./README/props.conf.spec)
+[serverclass.conf.example](./README/serverclass.conf.example)
+[serverclass.conf.spec](./README/serverclass.conf.spec)
+[transforms.conf.example](./README/transforms.conf.example)
+[transforms.conf.spec](./README/transforms.conf.spec)
 
 
-__Uninstalling Splunk on Linux__
+
+## Uninstalling Splunk Enterprise on Linux <a name="uninstall_splunk"></a>
 
 Get package name:
 ```rpm -q -a | grep -i splunk```
@@ -239,6 +268,9 @@ Example:
 Clean up remaining files/directory:
 ```cd /opt```
 ```rm -rf ./splunk```
+
+
+
 
 [top](#toc)
 
@@ -351,50 +383,6 @@ If you decide not to use forwarders to handle your data inputs, you can set up i
 
 
 
-### Multisite indexer clusters <a name="multisite_clusters"></a>
-
-Multisite indexer clusters allow you to maintain complete copies of your indexed data in multiple locations. This offers the advantages of enhanced disaster recovery and search affinity. You can specify the number of copies of data on each site. Multisite clusters are similar in most respects to basic, single-site clusters, with some differences in configuration and behavior. 
-
-For multisite clusters, you must also take into account the search head and peer node requirements of each site, as determined by your search affinity and disaster recovery needs. At a minimum, you will need (replication factor + 2) instances.
-
-__Configure the master node__  
-
-You configure the key attributes for the entire cluster on the master node. Here is an example of a multisite configuration for a master node:
-
-```
-[general]
-site = site1
-
-[clustering]
-mode = master
-multisite = true
-available_sites = site1,site2
-site_replication_factor = origin:2,total:3
-site_search_factor = origin:1,total:2
-pass4SymmKey = whatever
-cluster_label = cluster1
-```
-This example specifies that:
-
-* the instance is located on site1.
-* the instance is a cluster master node.
-* the cluster is multisite.
-* the cluster consists of two sites: site1 and site2.
-* the cluster's replication factor is the default "origin:2,total:3".
-* the cluster's search factor is "origin:1,total:2".
-* the cluster's security key is "whatever".
-* the cluster label is "cluster1."
- 
- Note the following:  
-* You specify the site attribute in the [general] stanza.
-* You specify all other multisite attributes in the [clustering] stanza.
-* You can locate the master on any site in the cluster, but each cluster has only one master.
-* You must set multisite=true.
-* You must list all cluster sites in the available_sites attribute.
-* You must set a site_replication_factor and a site_search_factor. For details, see Configure the site replication factor and Configure the site search factor.
-* The pass4SymmKey attribute, which sets the security key, must be the same across all cluster nodes. See Configure the indexer cluster with server.conf for details.
-* The cluster label is optional. It is useful for identifying the cluster in the monitoring console. 
-
 [top](#toc)
 
 
@@ -442,6 +430,48 @@ search_factor = 3
 pass4SymmKey = whatever
 cluster_label = cluster1
 ```
+### Multisite indexer clusters <a name="multisite_clusters"></a>
+
+Multisite indexer clusters allow you to maintain complete copies of your indexed data in multiple locations. This offers the advantages of enhanced disaster recovery and search affinity. You can specify the number of copies of data on each site. Multisite clusters are similar in most respects to basic, single-site clusters, with some differences in configuration and behavior. 
+
+For multisite clusters, you must also take into account the search head and peer node requirements of each site, as determined by your search affinity and disaster recovery needs. At a minimum, you will need (replication factor + 2) instances.
+
+__Configure the master node__  
+
+You configure the key attributes for the entire cluster on the master node. Here is an example of a multisite configuration for a master node:
+```
+[general]
+site = site1
+
+[clustering]
+mode = master
+multisite = true
+available_sites = site1,site2
+site_replication_factor = origin:2,total:3
+site_search_factor = origin:1,total:2
+pass4SymmKey = whatever
+cluster_label = cluster1
+```
+This example specifies that:
+
+* the instance is located on site1.
+* the instance is a cluster master node.
+* the cluster is multisite.
+* the cluster consists of two sites: site1 and site2.
+* the cluster's replication factor is the default "origin:2,total:3".
+* the cluster's search factor is "origin:1,total:2".
+* the cluster's security key is "whatever".
+* the cluster label is "cluster1."
+ 
+ Note the following:  
+* You specify the site attribute in the [general] stanza.
+* You specify all other multisite attributes in the [clustering] stanza.
+* You can locate the master on any site in the cluster, but each cluster has only one master.
+* You must set multisite=true.
+* You must list all cluster sites in the available_sites attribute.
+* You must set a site_replication_factor and a site_search_factor. For details, see Configure the site replication factor and Configure the site search factor.
+* The pass4SymmKey attribute, which sets the security key, must be the same across all cluster nodes. See Configure the indexer cluster with server.conf for details.
+* The cluster label is optional. It is useful for identifying the cluster in the monitoring console. 
 
 ### Managing Configurations Across Peers <a name="managing_peer_configs"></a>
 
@@ -483,12 +513,94 @@ Caution: When the master distributes the bundle to the peers, it distributes the
 
 The master-apps location is only for peer node files. The master does not use the files in that directory for its own configuration needs.
 
-__To distribute a new configuration bundle:  __
+### Configuring indexes.conf on a Cluster Master <a name="configuring_indexes_cluster"></a>
 
-Validate the bundle: ```splunk validate cluster-bundle```
-You can check the status of bundle validation ```splunk show cluster-bundle-status```
-Apply the bundle: ```splunk apply cluster-bundle```
-To avoid having to answer the prompt: ```splunk apply cluster-bundle --answer-yes```
+If you are using a index cluster, you must configure custom indexes in an indexes.conf file on the Cluster Master in a ```/opt/splunk/etc/master-apps/<app-name>/local/``` directory.
+
+The ```maxTotalDataSizeMB``` and ```frozenTimePeriodInSecs``` attributes in indexes.conf determine when buckets roll from cold to frozen. 
+
+If you set the coldToFrozenDir attribute in indexes.conf, the indexer will automatically copy frozen buckets to the specified location before erasing the data from the index.
+
+The following is an example of typical custom index entries in an indexes.conf file:  
+```
+[<index_name>]
+homePath   = volume:primary/index_name/db
+coldPath   = volume:primary/index_name/colddb
+thawedPath = $SPLUNK_DB/index_name/thaweddb
+# Seting the repFactor attribute to "auto" causes the index's data to be replicated to other peers in the cluster
+# By default, repFactor is set to 0, which means that the index will not be replicated
+repFactor = auto
+# index size of 30 GB = 30 x 1024 MB
+maxTotalDataSizeMB = 30720
+# only keep data for 30 days before archiving (default is 6 years)
+frozenTimePeriodInSecs = 2592000
+# you can specify a frozen archive location
+# if no fozen archive location is specified, the data is discarded
+# coldToFrozenDir = "<path to frozen archive>"
+```
+
+### Configuring props.conf files <a name="props_conf"></a>
+
+The props.conf (and transforms.conf, if applicable) file is distributed across the indexers ('search peers') to tell Splunk how to parse incoming data. You configure props.conf & transforms.conf in the ```/opt/splunk/etc/master-apps/<app-name>/local/``` directories. 
+
+When the cluster bundle is applied (distributed to the indexers / search peers) these same files will be located in ```/opt/splunk/etc/apps/<app-name>/local/``` directories on each indexer.
+
+Here is an assorted example of some props.conf entries; check the options for each of these entries in the [props.conf.example](./README/props.conf.example) or [props.conf.spec](./README/props.conf.spec) files:
+```
+BREAK_ONLY_BEFORE = ([\r\n]+)
+DATETIME_CONFIG = 
+MAX_TIMESTAMP_LOOKAHEAD = 30
+NO_BINARY_CHECK = true
+TIME_FORMAT = %Y-%m-%dT%H:%M:%S.%3N
+TIME_PREFIX = timestamp="
+TRUNCATE = 0
+SHOULD_LINEMERGE = false
+LINE_BREAKER = ([\r\n]+)\[\d{4}-\w{3}-\d{1,2}\s\d{1,2}:\d{1,2}:\d{1,2}\.\d{1,3}\]\s\w+
+PREAMBLE_REGEX = ^log4j\:[^\r\n]+[\r\n][^:]+[^\s]+[^\r\n]
+KV_MODE = json
+
+# Used with a transforms.conf file
+# ID the sourcetype to perform the transform on:
+[sourcetype::mssqlserver]
+# Then TRANSFORMS-<arbitrary name> = <stanza name in transforms.conf>
+TRANSFORMS-DBHost = db_host
+```
+
+### Configuring transforms.conf files <a name="transforms.conf"></a>
+
+The transforms.conf file is used to 
+
+Here are some assorted samples of transforms.conf entires; check the options for each of these entries in the [transforms.conf.example](./README/transforms.conf.example) or [transforms.conf.spec](./README/transforms.conf.spec) files:
+
+```
+# Used with the props.conf file in the previous example
+# [db_host] matches with `TRANSFORMS-DBHost = db_host' in props.conf
+[db_host]
+REGEX = MachineName="(?<hostname>.*?)"
+# Note that 'hostname' must match the RegEx field name above
+FORMAT = hostname::$1
+# use MetaData:Host to replace the default host entry in an event
+DEST_KEY = MetaData:Host
+
+
+# Another example
+[get_path]
+SOURCE_KEY = uri
+REGEX = ^(?<path>[^\s\?]+) 
+
+[get_query_string]
+SOURCE_KEY = uri
+REGEX = \?(<query_string>[^\s]+) 
+```
+
+### Applying a cluster bundle <a name="apply_cluster_bundle"></a>
+
+To distribute a new configuration bundle: 
+
+* Validate the bundle: ```splunk validate cluster-bundle```
+* You can check the status of bundle validation ```splunk show cluster-bundle-status```
+* Apply the bundle: ```splunk apply cluster-bundle```
+* To avoid having to answer the prompt: ```splunk apply cluster-bundle --answer-yes```
 
 You can also distribute a new configuration bundle from the GUI on the Cluster Master:
 
@@ -520,33 +632,7 @@ A Restart occurs when:
 * You make any of the indexes.conf changes described in Determine which indexes.conf changes require restart.
 * You delete an existing app from the configuration bundle.
 
-### Configuring Indexes on a Cluster <a name="configuring_indexes_cluster"></a>
-
-If you are using a index cluster, you must configure custom indexes in the indexes.conf on the Cluster Master in the application-specific directory under the ```/opt/splunk/etc/master-apps/...``` directory.
-
-The ```maxTotalDataSizeMB``` and ```frozenTimePeriodInSecs``` attributes in indexes.conf determine when buckets roll from cold to frozen. 
-
-If you set the coldToFrozenDir attribute in indexes.conf, the indexer will automatically copy frozen buckets to the specified location before erasing the data from the index.
-
-The following is an example of typical custom index entries in an indexes.conf file:  
-```
-[<index_name>]
-homePath   = volume:primary/index_name/db
-coldPath   = volume:primary/index_name/colddb
-thawedPath = $SPLUNK_DB/index_name/thaweddb
-# Seting the repFactor attribute to "auto" causes the index's data to be replicated to other peers in the cluster
-# By default, repFactor is set to 0, which means that the index will not be replicated
-repFactor = auto
-# index size of 30 GB = 30 x 1024 MB
-maxTotalDataSizeMB = 30720
-# only keep data for 30 days before archiving (default is 6 years)
-frozenTimePeriodInSecs = 2592000
-# you can specify a frozen archive location
-# if no fozen archive location is specified, the data is discarded
-# coldToFrozenDir = "<path to frozen archive>"
-```
-
-__Restarting a Cluster Master and/or peers__
+### Restarting a Cluster Master or peers <a name="restart_cm"></a>
 
 When restarting cluster peers, you should use Splunk Web or one of the cluster-aware CLI commands, such as splunk offline or splunk rolling-restart. Do not use splunk restart.
 
