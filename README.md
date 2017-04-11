@@ -31,12 +31,12 @@ __Installation and Infrastructure__
 
 [Install a search head, deployment server and indexers](https://github.com/packetiq/SplunkArchitect/blob/master/Install-and-Configure-Splunk-Enterprise-Components.md)
 
-Perform a scripted installation of universal forwarders
+[Perform a scripted installation of universal forwarders](https://github.com/packetiq/SplunkArchitect/blob/master/Install-and-Configure-Splunk-Enterprise-Components.md#install_uf)
 
 __Configuration, Collection, and Comprehension__
 
-Deploy all specified configurations via deployment server  
-Gather data from forwarders and send to multiple indexes depending on use case  
+[Deploy all specified configurations via deployment server](https://github.com/packetiq/SplunkArchitect/blob/master/Install-and-Configure-Splunk-Enterprise-Components.md#create_deployment_svr)
+[Gather data from forwarders and send to multiple indexes depending on use case](https://github.com/packetiq/SplunkArchitect/blob/master/Install-and-Configure-Splunk-Enterprise-Components.md#create_deployment_apps)
 Configure and confirm index-time knowledge  
 Create search time field extractions  
 

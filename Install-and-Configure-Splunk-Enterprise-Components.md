@@ -776,7 +776,7 @@ The knowledge bundle gets distributed to the ```$SPLUNK_HOME/var/run/searchpeers
 On a search head cluster, you can view replication status from the search head cluster captain:  
 Settings > Distributed Search > Search Peers  
 
-__Create a Deployer first__
+__1. Create a Deployer first__
 
 To update member configurations of a search head cluster, you need a Splunk Enterprise instance that functions as the deployer. See: [Create a Deployer](#create_deployer)
 
@@ -824,11 +824,27 @@ These ports must be in your firewall's list of allowed ports.
 
 Caution: Do not change the management port on any of the members while they are participating in the cluster. If you need to change the management port, you must first remove the member from the cluster.
 
+Select one of the initialized instances to be the first cluster captain. It does not matter which instance you select for this role.
+
+__2. Run the splunk bootstrap shcluster-captain command on a selected instance:__
+
+```splunk bootstrap shcluster-captain -servers_list "<URI>:<management_port>,<URI>:<management_port>,..." -auth <username>:<password>```
+
+Note the following:
+
+* This command designates the specified instance as the first cluster captain. Run this command on only a single instance.
+* The -servers_list parameter contains a comma-separated list of the cluster members, including the member that you are running the command on. The members are identified by URI and management port. This parameter is required.
+* Important: The URIs that you specify in -servers_list must be exactly the same as the ones that you specified earlier when you initialized each member, in the -mgmt_uri parameter. You cannot, for example, use ```https://foo.example.com:8089``` during initialization and ```https://foo.subdomain.example.com:8089``` here, even if they resolve to the same node.
+
+Here is an example of the bootstrap command:
+```
+splunk bootstrap shcluster-captain -servers_list "https://sh1.example.com:8089,https://sh2.example.com:8089,https://sh3.example.com:8089,https://sh4.exam
+```
+
 __Search Head Pools__
 You cannot enable search head clustering on an instance that is part of a search head pool. For information on migrating, see <a href="http://docs.splunk.com/Documentation/Splunk/6.5.3/DistSearch/Migratefromsearchheadpooling" target="_blank">Migrate from a search head pool to a search head cluster</a>
 
-
-__Edit distsearch.conf__
+__distsearch.conf__
 
 The settings available through Splunk Web provide sufficient options for most configurations.   Some advanced configuration settings, however, are only available by directly editing distsearch.conf. This section discusses only the configuration settings necessary for connecting search heads to search peers. For information on the advanced configuration options, see the distsearch.conf spec file.  
 
@@ -845,7 +861,7 @@ __Add the search peers__
 
 3. Restart the search head.
 
-__Distribute the key files__
+__Distributing key files__
 
 If you add search peers via Splunk Web or the CLI, Splunk Enterprise automatically configures authentication. However, if you add peers by editing distsearch.conf, you must distribute the key files manually. After adding the search peers and restarting the search head, as described above:
 
@@ -871,7 +887,7 @@ For example, if you have two search heads, named A and B, and they both need to 
 
 __Forward internal logs to the search peers__
 
-Create an outputs.conf file on each search head that configures the component for load-balanced forwarding across the set of search peers (indexers). You must also turn off indexing so that the component does not both retain the data locally as well as forward it to the search peers.
+Create an outputs.conf file that configures the search heads for load-balanced forwarding across the set of search peers (indexers). You must also turn off indexing so they do not both retain the data locally as well as forward it to the search peers.
 	
 [Forward internal data to search peers](#fwd_internal_data)
 
@@ -936,7 +952,7 @@ You can use a deployment server to distribute updates to search heads in indexer
 
 Because of high CPU and memory usage during app downloads, it is recommended that the deployment server instance reside on a dedicated machine.  
 
-### Create Deployment apps <a name="_create_deployment_apps"></a>
+### Create Deployment apps <a name="create_deployment_apps"></a>
 
 A deployment app consists of any arbitrary content that you want to download to a set of deployment clients. The content can include:
 
@@ -1152,26 +1168,28 @@ Both types of forwarders tag data with metadata such as host, source, and source
 Forwarders allow you to use resources efficiently when processing large quantities or disparate types of data coming from remote sources. They also offer capabilities for load balancing, data filtering, and routing.  
 
 __Manual Installation__
+
 * Access the Splunk website:  
 <a href="https://www.splunk.com/en_us/download/universal-forwarder.html#tabs/linux" target="_blank">Download Splunk Universal Forwarder</a>
 
 __Note: You will have to create an account and/or login using your Splunk user ID & password.__
 
 * Select and download the appropriate rpm package (linux > 64-bit > .rpm)
+* On the next Splunk web page (that shows up after you select a download), click the 'Download via Command Line (wget)' link and copy the string - for example:
+```
+wget -O splunkforwarder-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=6.5.3&product=universalforwarder&filename=splunkforwarder-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm&wget=true'
+```
+Or...
 * Use ftp or WinSCP to copy the package to the splunk server.  
 * ```sudo su```  (root)
-* Change permissions on the file:
-```chmod 744 splunkforwarder-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm```
 * Install the package
 ```rpm -i splunkforwarder-<…>-linux-2.6-x86_64.rpm```
-
 * Start the Forwarder:
 ```cd /opt/splunkforwarder/bin/```
 ```./splunk start```
 
-
 __Remote / Automated Installation__
-You can craft an installation script using the following links as starting points, and leveraging the __wget__ command as outlined in [Obtain the Splunk Installation Package](get_package
+You can craft an installation script using the following links as starting points, and leveraging the __wget__ command:
 
 <a href="http://docs.splunk.com/Documentation/Forwarder/6.5.3/Forwarder/Installanixuniversalforwarderremotelywithastaticconfiguration" target="_blank">docs.splunk.com/Documentation/Forwarder/6.5.3/Forwarder/Installanixuniversalforwarderremotelywithastaticconfiguration</a>
 <a href="https://answers.splunk.com/answers/34896/simple-installation-script-for-universal-forwarder.html" target="_blank">answers.splunk.com/answers/34896/simple-installation-script-for-universal-forwarder</a>
