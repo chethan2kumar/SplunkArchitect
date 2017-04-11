@@ -14,7 +14,7 @@
 	* [Synchronize system clocks across the distributed search environment](#clocks)
 	* [Forwarding internal data to search peers](#fwd_internal_data)
 	* [Cleaning an Index](#clean_index)
-	* [Splunk README Files](#readme)
+	* [Splunk README Files](#splunk_readme)
  
 2. [Uninstalling Splunk Enterprise on Linux](#uninstall_splunk)
 	
@@ -227,7 +227,7 @@ splunk clean eventdata -index yourindex
 splunk start
 ```
 
-### Splunk README Files <a name="readme"></a>
+### Splunk README Files <a name="splunk_readme"></a>
 
 The ```/opt/splunk/etc/system/README``` directory of any Splunk installation contains a complete set of text documents for all of the Splunk .conf files. There are two files for each configuration:
 ```
