@@ -311,7 +311,7 @@ The following processes occur during index time (controlled by __props.conf__ on
 * Default field extraction (such as host, source, sourcetype, and timestamp)
 * Static or dynamic host assignment for specific inputs
 * Default host assignment overrides
-* Source type customization
+* Source type customization 
 * Custom index-time field extraction
 * Structured data field extraction
 * Event timestamping

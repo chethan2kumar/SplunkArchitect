@@ -5,7 +5,7 @@
 1. [Installing Splunk Enterprise on Linux](#install_splunk)
 2. [Uninstalling Splunk Enterprise on Linux](#uninstall_splunk)
 3. [Create a Splunk Indexer](#create_indexer)
-
+4. [Create a Cluster Master](#create_cluster_master)
 10. [Install a Universal Forwarder](#install_uf)
 
 
@@ -106,6 +106,8 @@ master_uri = https://10.152.31.202:8089
 mode = slave
 pass4SymmKey = whatever
 ```
+
+## Create a Cluster Master <a name="create_cluster_master"></a>
 
 
 
