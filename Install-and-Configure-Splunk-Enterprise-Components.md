@@ -13,6 +13,7 @@
 	* [Configure Splunk Web to use SSL (Recommended)](#set_ssl)
 	* [Synchronize system clocks across the distributed search environment](#clocks)
 	* [Forward internal data to search peers](#fwd_internal_data)
+	* [Splunk README Files](#readme)
  
 2. [Uninstalling Splunk Enterprise on Linux](#uninstall_splunk)
 
@@ -209,6 +210,21 @@ The following sections outline how to configure instances of Splunk Enterprise t
 It may be helpful to read the section '[Overview of a Clustered Splunk Environment](#clustered_overview)' below before progressing to specific component configuration.
 
 If you are using a standalone instance of Splunk Enterprise you may want to apply some of the function-specific settings outlined in the following sections. Generic settings that may be applied to any Splunk solution will be indicated.
+
+### Splunk README Files <a name="readme"></a>
+
+The ```/opt/splunk/etc/system/README``` directory of any Splunk installation contains a complete set of text documents for all of the Splunk .conf files. There are two files for each configuration:
+```
+<topic>.conf.example
+<topic>.conf.spec
+```
+A copy of the README files for Splunk 6.5 are in the README directory of this repository.
+
+The more immediately useful of these would include:
+
+[inputs.conf.example](./README/inputs.conf.example)
+[inputs.conf.spec](./README/inputs.conf.spec)
+
 
 __Uninstalling Splunk on Linux__
 
