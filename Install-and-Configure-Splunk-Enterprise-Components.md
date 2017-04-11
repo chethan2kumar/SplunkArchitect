@@ -257,6 +257,8 @@ The more useful of these may include:
 
 ## Uninstalling Splunk Enterprise on Linux <a name="uninstall_splunk"></a>
 
+This process is the same for uninstalling Splunk Enterprise or a Universal Forwarder:
+
 Get package name:
 ```rpm -q -a | grep -i splunk```
 
