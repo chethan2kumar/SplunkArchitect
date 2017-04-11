@@ -80,18 +80,13 @@ Clean up remaining files/directory:
 
 ## Create a Splunk Indexer <a name="create_indexer"></a>
 
-1. Click Settings in the upper right corner of Splunk Web.
-2. In the Distributed environment group, click Indexer clustering.
-3. Select Enable indexer clustering.
-4. Select Peer node and click Next.
-5. There are a few fields to fill out:
+Settings > Indexer clustering > Enable indexer clustering > Peer node > Next
 
 * Master URI. Enter the master's URI, including its management port. For example: https://10.152.31.202:8089.
 * Peer replication port. This is the port on which the peer receives replicated data streamed from the other peers. You can specify any available, unused port for this purpose. This port must be different from the management or receiving ports.
 * Security key. This is the key that authenticates communication between the master and the peers and search heads. The key must be the same across all cluster nodes. Set the same value here that you previously set on the master node.
-6. Click Enable peer node.
-7. Restart splunk
-8. Repeat for all peer nodes
+
+Click Enable peer node & Restart Splunk  
 
 When you have enabled the 'replication factor' number of peers, the cluster can start indexing and replicating data (it will be blocked by the master node until the RF number of peers is enabled).
 
@@ -109,6 +104,33 @@ pass4SymmKey = whatever
 
 ## Create a Cluster Master <a name="create_cluster_master"></a>
 
+__To configure a Splunk Enterprise instance as the Cluster Master / master node:__
+
+Settings > Indexer clustering > Enable indexer clustering > Master node > Next
+
+* Replication Factor. The replication factor determines how many copies of data the cluster maintains. The default is 3. Be sure to choose the right replication factor now. It is inadvisable to increase the replication factor later, after the cluster contains significant amounts of data.  
+* Search Factor. The search factor determines how many immediately searchable copies of data the cluster maintains. The default is 2. Be sure to choose the right search factor now. It is inadvisable to increase the search factor later, once the cluster has significant amounts of data.  
+* Security Key. This is the key that authenticates communication between the master and the peers and search heads. The key must be the same across all cluster nodes. The value that you set here must be the same that you subsequently set on the peers and search heads as well.  
+* Cluster Label. You can label the cluster here. The label is useful for identifying the cluster in the monitoring console. See Set cluster labels in Monitoring Splunk Enterprise.
+
+[Forward internal data to search peers](#fwd_internal_data)
+Enable master node & Restart Splunk
+
+When the master starts up for the first time, it will block indexing on the peers until you enable and restart the full replication factor number of peers. Do not restart the master while it is waiting for the peers to join the cluster. If you do, you will need to restart the peers a second time.
+
+After the restart, log back into the master and return to the Clustering page in Splunk Web (Settings > Indexer Clustering>). You will see the master clustering dashboard. 
+
+__Configuring a Cluster Master using server.conf__
+
+Enabling a Cluster Master or editing its configuration can also be done in ```/opt/splunk/etc/system/local/server.conf```:
+```
+[clustering]
+mode = master
+replication_factor = 4
+search_factor = 3
+pass4SymmKey = whatever
+cluster_label = cluster1
+```
 
 
 
