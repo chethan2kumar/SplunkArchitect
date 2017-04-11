@@ -38,7 +38,7 @@
 9. [Create a License Server](#create_lic_svr)
 	* [Licenses for distributed search](#search_licenses)
 
-10. [Install a Universal Forwarder](#install_uf)
+10. [Install and Configure a Universal Forwarder](#install_uf)
 	* [Configuring outputs.conf](#outputs.conf)
 	* [Configuring inputs.conf](#inputs.conf)
 
@@ -54,6 +54,11 @@ All Splunk components except a Universal Forwarder ( a separate lightweight pack
 <a href="https://www.splunk.com/en_us/download/sem.html?ac=ga_usa_brand_enterprise_exact_Mar17&_kk=splunk%2520enterprise&gclid=CIvWzN6Hk9MCFQsRgQodK_QARg" target="_blank">Download Splunk Enterprise RPM for Linux-x86_64</a>
 
 __Note: You will have to create an account and/or login using your Splunk user ID & password.__
+
+To fetch the splunk installable directly from a target server, use wget:  
+
+```wget -O splunk-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=6.5.1&product=splunk&filename=splunk-6.5.1--------linux-2.6-x86_64.rpm&wget=true'```
+or...
 
 * Select and download the appropriate rpm package (...x86_64.rpm)
 * Use ftp or WinSCP to copy the package to the splunk server.  
@@ -802,7 +807,7 @@ Each instance in a distributed search deployment must have access to a license p
 
 [top](#toc)
 
-## Install a Universal Forwarder <a name="install_uf"></a>
+## Install and Configure a Universal Forwarder <a name="install_uf"></a>
 
 __Forwarding data to an indexer__
 To forward remote data to an indexer, you use forwarders, which are Splunk Enterprise instances that receive data inputs and then consolidate and send the data to a Splunk Enterprise indexer.  
@@ -848,6 +853,7 @@ For most types of cluster deployments, you should enable indexer acknowledgment 
 You can simplify the process of connecting forwarders to peer nodes by using the indexer discovery feature.
 
 ### Configuring inputs.conf <a name="inputs.conf"></a>
+
 
 
 
