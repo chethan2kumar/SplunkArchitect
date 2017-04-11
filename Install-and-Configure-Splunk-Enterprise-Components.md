@@ -455,7 +455,7 @@ For multisite clusters, you must also take into account the search head and peer
 
 __Configure the master node__  
 
-You configure the key attributes for the entire cluster on the master node. Here is an example of a multisite configuration for a master node:
+You configure the key attributes for the entire cluster on the master node in ```/opt/splunk/etc/system/local/server.conf```. Here is an example of a multisite configuration for a master node:
 ```
 [general]
 site = site1
@@ -873,6 +873,24 @@ To integrate search head cluster members with a multisite indexer cluster, confi
 ```splunk edit cluster-config -mode searchhead -site site0 -master_uri https://10.152.31.202:8089 -secret newsecret123```
 
 ```splunk restart```
+
+
+```
+[shclustering]
+conf_deploy_fetch_url = https://<deployerHostname>:8089
+disabled = 0
+mgmt_uri = https://fldcvpsla9448.wdw.disney.com:8089
+pass4SymmKey = <key>
+replication_factor = 2
+id = <GUID>
+
+[clustering]
+master_uri = https://<clusterMasterHostname>:8089
+mode = searchhead
+multisite = true
+pass4SymmKey = <key>
+```
+
 
 [top](#toc)
 

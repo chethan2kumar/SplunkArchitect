@@ -113,8 +113,9 @@ Settings > Indexer clustering > Enable indexer clustering > Master node > Next
 * Security Key. This is the key that authenticates communication between the master and the peers and search heads. The key must be the same across all cluster nodes. The value that you set here must be the same that you subsequently set on the peers and search heads as well.  
 * Cluster Label. You can label the cluster here. The label is useful for identifying the cluster in the monitoring console. See Set cluster labels in Monitoring Splunk Enterprise.
 
-[Forward internal data to search peers](#fwd_internal_data)
 Enable master node & Restart Splunk
+Also:
+[Forward internal data to search peers](#fwd_internal_data)
 
 When the master starts up for the first time, it will block indexing on the peers until you enable and restart the full replication factor number of peers. Do not restart the master while it is waiting for the peers to join the cluster. If you do, you will need to restart the peers a second time.
 
@@ -131,6 +132,106 @@ search_factor = 3
 pass4SymmKey = whatever
 cluster_label = cluster1
 ```
+
+### Configuring indexes.conf on a Cluster Master <a name="configuring_indexes_cluster"></a>
+
+If you are using a index cluster, you must configure custom indexes in an indexes.conf file on the Cluster Master in a ```/opt/splunk/etc/master-apps/<app-name>/local/``` directory.
+
+The following is an example of typical custom index entries in an indexes.conf file:  
+```
+[<index_name>]
+homePath   = volume:primary/index_name/db
+coldPath   = volume:primary/index_name/colddb
+thawedPath = $SPLUNK_DB/index_name/thaweddb
+# Seting the repFactor attribute to "auto" causes the index's data to be replicated to other peers in the cluster
+# By default, repFactor is set to 0, which means that the index will not be replicated
+repFactor = auto
+# index size of 30 GB = 30 x 1024 MB
+maxTotalDataSizeMB = 30720
+# only keep data for 30 days before archiving (default is 6 years)
+frozenTimePeriodInSecs = 2592000
+# you can specify a frozen archive location
+# if no fozen archive location is specified, the data is discarded
+# coldToFrozenDir = "<path to frozen archive>"
+```
+
+### Configuring props.conf files <a name="props_conf"></a>
+
+The props.conf (and transforms.conf, if applicable) file is distributed across the indexers ('search peers') to tell Splunk how to parse incoming data. You configure props.conf & transforms.conf in the ```/opt/splunk/etc/master-apps/<app-name>/local/``` directories. 
+
+When the cluster bundle is applied (distributed to the indexers / search peers) these same files will be located in ```/opt/splunk/etc/apps/<app-name>/local/``` directories on each indexer.
+
+Here is an assorted example of some props.conf entries; check the options for each of these entries in the [props.conf.example](./README/props.conf.example) or [props.conf.spec](./README/props.conf.spec) files:
+```
+BREAK_ONLY_BEFORE = ([\r\n]+)
+DATETIME_CONFIG = 
+MAX_TIMESTAMP_LOOKAHEAD = 30
+NO_BINARY_CHECK = true
+TIME_FORMAT = %Y-%m-%dT%H:%M:%S.%3N
+TIME_PREFIX = timestamp="
+TRUNCATE = 0
+SHOULD_LINEMERGE = false
+LINE_BREAKER = ([\r\n]+)\[\d{4}-\w{3}-\d{1,2}\s\d{1,2}:\d{1,2}:\d{1,2}\.\d{1,3}\]\s\w+
+PREAMBLE_REGEX = ^log4j\:[^\r\n]+[\r\n][^:]+[^\s]+[^\r\n]
+KV_MODE = json
+
+# Used with a transforms.conf file
+# ID the sourcetype to perform the transform on:
+[sourcetype::mssqlserver]
+# Then TRANSFORMS-<arbitrary name> = <stanza name in transforms.conf>
+TRANSFORMS-DBHost = db_host
+```
+
+### Configuring transforms.conf files <a name="transforms.conf"></a>
+
+The transforms.conf file is used to 
+
+Here are some assorted samples of transforms.conf entires; check the options for each of these entries in the [transforms.conf.example](./README/transforms.conf.example) or [transforms.conf.spec](./README/transforms.conf.spec) files:
+
+```
+# Used with the props.conf file in the previous example
+# [db_host] matches with `TRANSFORMS-DBHost = db_host' in props.conf
+[db_host]
+REGEX = MachineName="(?<hostname>.*?)"
+# Note that 'hostname' must match the RegEx field name above
+FORMAT = hostname::$1
+# use MetaData:Host to replace the default host entry in an event
+DEST_KEY = MetaData:Host
+
+
+# Another example
+[get_path]
+SOURCE_KEY = uri
+REGEX = ^(?<path>[^\s\?]+) 
+
+[get_query_string]
+SOURCE_KEY = uri
+REGEX = \?(<query_string>[^\s]+) 
+```
+
+__To distribute a new configuration bundle: __
+
+* Validate the bundle: ```splunk validate cluster-bundle```
+* You can check the status of bundle validation ```splunk show cluster-bundle-status```
+* Apply the bundle: ```splunk apply cluster-bundle```
+* To avoid having to answer the prompt: ```splunk apply cluster-bundle --answer-yes```
+
+__NOTE: Be sure to validate the cluster bunde before running ```splunk apply``` - if you apply a bundle with errrors in the indexes.conf file you could bring the entire indexer cluster down, necessitating fixing the error manually on each indexer and restarting it.__
+
+## Create a Splunk Search Head <a name="create_search_head"></a>
+
+__Configure a Splunk instance as a search head in an indexer cluster:__
+
+1. Click Settings in the upper right corner of Splunk Web.
+2. In the Distributed environment group, click Distributed search 
+3. 
+
+
+	The message appears, "You must restart Splunk for the search node to become active. You can restart Splunk from Server Controls."
+
+7. Click Go to Server Controls. This takes you to the Settings page where you can initiate the restart.  
+
+8. After the restart, log back into the search head and return to the Clustering page in Splunk Web. This time, you see the search head's clustering dashboard.  
 
 
 
