@@ -238,22 +238,20 @@ A copy of the README files for Splunk 6.5 are in the README directory of this re
 
 The more useful of these may include:
 
-[distsearch.conf.example](./README/distsearch.conf.example)
-[distsearch.conf.spec](./README/distsearch.conf.spec)
-[indexes.conf.example](./README/indexes.conf.example)
-[indexes.conf.spec](./README/indexes.conf.spec)
+[distsearch.conf.example](./README/distsearch.conf.example)  
+[distsearch.conf.spec](./README/distsearch.conf.spec)  
+[indexes.conf.example](./README/indexes.conf.example)  
+[indexes.conf.spec](./README/indexes.conf.spec)  
 [inputs.conf.example](./README/inputs.conf.example)  
 [inputs.conf.spec](./README/inputs.conf.spec)  
 [outputs.conf.example](./README/outputs.conf.example)  
 [outputs.conf.spec](./README/outputs.conf.spec)  
-[props.conf.example](./README/props.conf.example)
-[props.conf.spec](./README/props.conf.spec)
-[serverclass.conf.example](./README/serverclass.conf.example)
-[serverclass.conf.spec](./README/serverclass.conf.spec)
-[transforms.conf.example](./README/transforms.conf.example)
-[transforms.conf.spec](./README/transforms.conf.spec)
-
-
+[props.conf.example](./README/props.conf.example)  
+[props.conf.spec](./README/props.conf.spec)  
+[serverclass.conf.example](./README/serverclass.conf.example)  
+[serverclass.conf.spec](./README/serverclass.conf.spec)  
+[transforms.conf.example](./README/transforms.conf.example)  
+[transforms.conf.spec](./README/transforms.conf.spec)  
 
 ## Uninstalling Splunk Enterprise on Linux <a name="uninstall_splunk"></a>
 
