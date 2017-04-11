@@ -1115,7 +1115,7 @@ __Important:__
 
 __Creating a Deployer__
 
-*Deployer functionality is automatically enabled on all Splunk Enterprise instances*. The main configuration step is to specify the deployer's security key, as described in the next step. Later in the deployment process, you point the cluster members at this deployer instance, so that they have access to it.
+__*Deployer functionality is automatically enabled on all Splunk Enterprise instances*.__ The main configuration step is to specify the deployer's security key, as described in the next step. Later in the deployment process, you point the cluster members at this deployer instance, so that they have access to it.
 
 __Configure the deployer's security key__
 
