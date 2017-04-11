@@ -511,7 +511,7 @@ $SPLUNK_HOME/etc/master-apps/
 
 Caution: When the master distributes the bundle to the peers, it distributes the entire bundle, overwriting the entire contents of any configuration bundle previously distributed to the peers.
 
-The master-apps location is only for peer node files. The master does not use the files in that directory for its own configuration needs.
+__The master-apps location is only for peer node files__. The master does not use the files in that directory for its own configuration needs.
 
 ### Configuring indexes.conf on a Cluster Master <a name="configuring_indexes_cluster"></a>
 
@@ -595,12 +595,14 @@ REGEX = \?(<query_string>[^\s]+)
 
 ### Applying a cluster bundle <a name="apply_cluster_bundle"></a>
 
-To distribute a new configuration bundle: 
+__To distribute a new configuration bundle: __
 
 * Validate the bundle: ```splunk validate cluster-bundle```
 * You can check the status of bundle validation ```splunk show cluster-bundle-status```
 * Apply the bundle: ```splunk apply cluster-bundle```
 * To avoid having to answer the prompt: ```splunk apply cluster-bundle --answer-yes```
+
+__NOTE: Be sure to validate the cluster bunde before running ```splunk apply``` - if you apply a bundle with errrors in the indexes.conf file you could bring the entire indexer cluster down, necessitating fixing the error manually on each indexer and restarting it.__
 
 You can also distribute a new configuration bundle from the GUI on the Cluster Master:
 
