@@ -845,7 +845,7 @@ __Remote / Automated Installation__
 You can craft an installation script using the following links as starting points:  
 
 <a href="http://docs.splunk.com/Documentation/Forwarder/6.5.3/Forwarder/Installanixuniversalforwarderremotelywithastaticconfiguration" target="_blank">docs.splunk.com/Documentation/Forwarder/6.5.3/Forwarder/Installanixuniversalforwarderremotelywithastaticconfiguration</a>
-<a href="https//answers.splunk.com/answers/34896/simple-installation-script-for-universal-forwarder" target="_blank">answers.splunk.com/answers/34896/simple-installation-script-for-universal-forwarder</a>
+<a href="https://answers.splunk.com/answers/34896/simple-installation-script-for-universal-forwarder.html" target="_blank">answers.splunk.com/answers/34896/simple-installation-script-for-universal-forwarder</a>
 <a href="https://answers.splunk.com/answers/100989/forwarder-installation-script" target="_blank">answers.splunk.com/answers/100989/forwarder-installation-script</a>
 
 For most types of cluster deployments, you should enable indexer acknowledgment for the forwarders sending data to the peer. 
