@@ -1,8 +1,9 @@
-# Splunk Components Quick Reference Checklist
+# Splunk Components Quick Reference
 
 ### Contents <a name="toc"></a>
 
 1. [Installing Splunk Enterprise on Linux](#install_splunk)
+	* [Forwarding internal data to search peers](#fwd_internal_data)
 2. [Uninstalling Splunk Enterprise on Linux](#uninstall_splunk)
 3. [Create a Splunk Indexer](#create_indexer)
 4. [Create a Cluster Master](#create_cluster_master)
@@ -30,7 +31,7 @@ FTP or WinSCP install package to target server(s)
 
 __All Splunk components__
 
-sudo su
+sudo su  
 chmod 744 splunk-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm  
 rpm -i splunk-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm  
 cd /opt/splunk/bin  
@@ -62,6 +63,28 @@ __Login to Splunk Web__
 
 ```http://<yourservername>:8000/```
 admin - changeme - MyNewPassword  
+
+Note: You can determine the proper web port with ```/opt/splunk/bin/splunk show web-port```
+
+### Forwarding internal data to search peers <a name="fwd_internal_data"></a>
+
+You will want to forward internal log data (_internal, _audit, etc.) of any Splunk component in a distributed environment (except Universal Forwarders) to the indexer cluster so that this data can be searched. Turn off indexing on the Splunk component so that it does not both retain the data locally as well as forward it to the search peers.  
+
+```/opt/splunk/etc/system/local/outputs.conf```:
+```
+# Turn off indexing (except on indexers)
+[indexAndForward]
+index = false
+ 
+[tcpout]
+defaultGroup = my_search_peers 
+forwardedindex.filter.disable = true  
+indexAndForward = false 
+ 
+[tcpout:my_search_peers]
+server=10.10.10.1:9997,10.10.10.2:9997,10.10.10.3:9997
+autoLB = true
+```
 
 ## Uninstalling Splunk Enterprise on Linux <a name="uninstall_splunk"></a>
 
@@ -113,8 +136,8 @@ Settings > Indexer clustering > Enable indexer clustering > Master node > Next
 * Security Key. This is the key that authenticates communication between the master and the peers and search heads. The key must be the same across all cluster nodes. The value that you set here must be the same that you subsequently set on the peers and search heads as well.  
 * Cluster Label. You can label the cluster here. The label is useful for identifying the cluster in the monitoring console. See Set cluster labels in Monitoring Splunk Enterprise.
 
-Enable master node & Restart Splunk
-Also:
+Enable master node & Restart Splunk  
+Also:  
 [Forward internal data to search peers](#fwd_internal_data)
 
 When the master starts up for the first time, it will block indexing on the peers until you enable and restart the full replication factor number of peers. Do not restart the master while it is waiting for the peers to join the cluster. If you do, you will need to restart the peers a second time.
@@ -226,10 +249,6 @@ __Configure a Splunk instance as a search head in an indexer cluster:__
 2. In the Distributed environment group, click Distributed search 
 3. 
 
-
-	The message appears, "You must restart Splunk for the search node to become active. You can restart Splunk from Server Controls."
-
-7. Click Go to Server Controls. This takes you to the Settings page where you can initiate the restart.  
 
 8. After the restart, log back into the search head and return to the Clustering page in Splunk Web. This time, you see the search head's clustering dashboard.  
 
