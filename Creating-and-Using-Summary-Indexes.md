@@ -10,7 +10,7 @@ Settings > Searches, reports, and alerts
 Select the App context to create the saved search in, if applicable
 New
 
-Complete the fields per the following image and field data examples:
+Complete the fields per the following image and field data examples for a report named 'Top 20 NGE Exception Messages':
 
 ![Saved Search Report Setup 1](/images/saved_search_settings_1.png)  
 
@@ -33,6 +33,21 @@ eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_message=* | 
 | fields start end count percent nge_exception_message 
 ```
 
+__Notes on Search String Attributes__
+
+* The 'rex' entries remove and replace identifiers that may be unique with generic 'xxxx' or '-data-' values so that the exception messages are reduced to just their 'types'.
+
+* addinfo adds time info fields to each event including:
+
+	* info_min_time
+	* info_max_tim
+	* info_search_time
+
+* The __eval _time = info_max_time__ creates a timestamp for the event from the info_max_time epoch value that reflects the *last* event in the time range. The _time timestamp would otherwise reflect the time of the *first* event, which can be misleading.
+
+* The designated fields, along with the rest of the addinfo fields, are added to the designated summary index as events.
+
+The report is configured to collect data from the previous whole hour using the Earliest = -1h@h & Latest = -0h@h time specifiers.
 
 
 ![Saved Search Report Setup 2](/images/saved_search_settings_2.png)  
