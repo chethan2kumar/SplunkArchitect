@@ -1,0 +1,9 @@
+﻿#   Version 6.5.0
+
+[pubsub-server:deploymentServer]
+disabled=false
+targetUri=somehost:8089
+
+[pubsub-server:internalbroker]
+disabled=false
+targetUri=direct

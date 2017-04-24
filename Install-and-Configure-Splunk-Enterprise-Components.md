@@ -12,10 +12,12 @@
 	* [Change the default Splunk Web port from 8000 to 8080 (Optional)](#set_port_8080)
 	* [Configure Splunk Web to use SSL (Recommended)](#set_ssl)
 	* [Synchronize system clocks across the distributed search environment](#clocks)
-	* [Forward internal data to search peers](#fwd_internal_data)
+	* [Forwarding internal data to search peers](#fwd_internal_data)
+	* [Cleaning an Index](#clean_index)
+	* [Splunk README Files](#splunk_readme)
  
 2. [Uninstalling Splunk Enterprise on Linux](#uninstall_splunk)
-
+	
 3. [Overview of a Clustered Splunk Environment](#clustered_overview)
 	* [Index Time vs Search Time Processing](#index_vs_search)
 
@@ -25,20 +27,29 @@
 	
 5. [Create a Cluster Master](#create_cluster_master)
 	* [Managing Configurations Across Peers](#managing_peer_configs)
-	* [Configuring Indexes on a Cluster](#configuring_indexes_cluster)
-
+	* [Configuring indexes.conf on a Cluster Master](#configuring_indexes_cluster)
+	* [Configuring props.conf files](#props_conf)
+	* [Configuring transforms.conf files](#transforms.conf)
+	* [Applying a cluster bundle](#apply_cluster_bundle)
+	* [Restarting a Cluster Master or peers](#restart_cm)
+	
 6. [Create a Splunk Search Head](#create_search_head)
 	* [Distributed search with single dedicated search head](#dist_search)
 	* [Creating a Search Head Cluster](#distributed_search)
+	* [Configure the Search Head cluster members](#configure_sh_cluster_members)
+	* [Final Steps](#final_sh_steps)
 
 7. [Create a Deployment Server](#create_deployment_svr)
-
+	* [Create Deployment apps](#create_deployment_apps)
+	* [Define a server class](#define_serverclass)
+	* [Configure the deployment client](#configure_deployment_client)
+	
 8. [Create a Deployer](#create_deployer)
 
 9. [Create a License Server](#create_lic_svr)
 	* [Licenses for distributed search](#search_licenses)
 
-10. [Install a Universal Forwarder](#install_uf)
+10. [Install and Configure a Universal Forwarder](#install_uf)
 	* [Configuring outputs.conf](#outputs.conf)
 	* [Configuring inputs.conf](#inputs.conf)
 
@@ -55,8 +66,21 @@ All Splunk components except a Universal Forwarder ( a separate lightweight pack
 
 __Note: You will have to create an account and/or login using your Splunk user ID & password.__
 
+To fetch the splunk installable directly from a target server, use wget:  
+* Select the appropriate Splunk download from the website link above
+* Cancel the download window
+* From the page that appears after the download appears, in the top-right click the link in 'Download via Command Line (wget)'
+* Copy the wget string and paste it into a command shell  
+
+Example wget string:  
+```wget -O splunk-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=6.5.3&product=splunk&filename=splunk-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm&wget=true'```
+
+or...
 * Select and download the appropriate rpm package (...x86_64.rpm)
 * Use ftp or WinSCP to copy the package to the splunk server.  
+
+When you have the installation package on the target server:  
+
 * ```sudo su```  (root)
 * Change permissions on the file:
 previous:  
@@ -102,6 +126,8 @@ You may see a 'Help us improve Splunk software' message...
 
 * un-check the 'Share license usage data with Splunk' box  and click 'OK'  
 
+Note: You can determine the proper web port with ```/opt/splunk/bin/splunk show web-port```
+
 ### Post Installation Settings <a name="post_install"></a>
 
 These are recommended settings to ensure that Splunk starts automatically after a server reboot, set the default environment variable, and 
@@ -144,10 +170,11 @@ For an initial test scenario, you may want to use non-SSL access, on a non-stand
 
 ```/opt/splunk/bin/splunk set web-port 8080```
 
-This adds the following to opt/splunk/etc/system/local/web.conf
-
-	[settings]
-	httpport = 8080  
+This adds the following to the __web.conf__ file in ```opt/splunk/etc/system/local/```:
+```
+[settings]
+httpport = 8080  
+```
 
 ### Configure Splunk Web to use SSL (Recommended) <a name="set_ssl"></a>
 
@@ -160,7 +187,7 @@ Run Splunk Web: Yes (on by default)
 Enable SSL (HTTPS) in Splunk Web?: Yes
 Web port: 8443
 Click Save
-This will modify /opt/splunk/etc/system/local/web.conf to contain:
+This will modify the __web.conf__ file in ```/opt/splunk/etc/system/local/``` to contain:
 ```
 [settings]
 httpport = 8443
@@ -173,7 +200,7 @@ Synchronize the system clocks on all machines, virtual or physical, that are run
 
 The synchronization method that you use depends on your specific set of machines. For most environments, Network Time Protocol (NTP) is the best approach.
 
-#### Forward internal data to search peers <a name="fwd_internal_data"></a>
+### Forwarding internal data to search peers <a name="fwd_internal_data"></a>
 
 You will want to forward internal log data (_internal, _audit, etc.) of any Splunk component in a distributed environment (except Universal Forwarders) to the indexer cluster so that this data can be searched, as follows:
 
@@ -205,7 +232,47 @@ It may be helpful to read the section '[Overview of a Clustered Splunk Environme
 
 If you are using a standalone instance of Splunk Enterprise you may want to apply some of the function-specific settings outlined in the following sections. Generic settings that may be applied to any Splunk solution will be indicated.
 
-__Uninstalling Splunk on Linux__
+### Cleaning an Index <a name="clean_index"></a>
+__!!! DANGEROUS - CANNOT BE UNDONE!!! __
+
+```splunk stop```
+
+To permanently remove event data from all indexes (__why?__), type:
+```splunk clean eventdata```
+To permanently remove event data from a single index, type:
+```splunk clean eventdata -index yourindex```
+
+```splunk start```
+
+### Splunk README Files <a name="splunk_readme"></a>
+
+The ```/opt/splunk/etc/system/README``` directory of any Splunk installation contains a complete set of text documents for all of the Splunk .conf files. There are two files for each configuration:
+```
+<topic>.conf.example - annotated examples
+<topic>.conf.spec - detailed description of options
+```
+A copy of the README files for Splunk 6.5 are in the README directory of this repository.
+
+The more useful of these may include:
+
+[distsearch.conf.example](./README/distsearch.conf.example)  
+[distsearch.conf.spec](./README/distsearch.conf.spec)  
+[indexes.conf.example](./README/indexes.conf.example)  
+[indexes.conf.spec](./README/indexes.conf.spec)  
+[inputs.conf.example](./README/inputs.conf.example)  
+[inputs.conf.spec](./README/inputs.conf.spec)  
+[outputs.conf.example](./README/outputs.conf.example)  
+[outputs.conf.spec](./README/outputs.conf.spec)  
+[props.conf.example](./README/props.conf.example)  
+[props.conf.spec](./README/props.conf.spec)  
+[serverclass.conf.example](./README/serverclass.conf.example)  
+[serverclass.conf.spec](./README/serverclass.conf.spec)  
+[transforms.conf.example](./README/transforms.conf.example)  
+[transforms.conf.spec](./README/transforms.conf.spec)  
+
+## Uninstalling Splunk Enterprise on Linux <a name="uninstall_splunk"></a>
+
+This process is the same for uninstalling Splunk Enterprise or a Universal Forwarder:
 
 Get package name:
 ```rpm -q -a | grep -i splunk```
@@ -218,6 +285,9 @@ Example:
 Clean up remaining files/directory:
 ```cd /opt```
 ```rm -rf ./splunk```
+
+
+
 
 [top](#toc)
 
@@ -250,7 +320,7 @@ The following processes occur during index time (controlled by __props.conf__ on
 * Default field extraction (such as host, source, sourcetype, and timestamp)
 * Static or dynamic host assignment for specific inputs
 * Default host assignment overrides
-* Source type customization
+* Source type customization 
 * Custom index-time field extraction
 * Structured data field extraction
 * Event timestamping
@@ -324,56 +394,21 @@ This example specifies that:
 * the instance is a cluster peer ("slave") node.
 * the security key is "whatever".
 
-### Configure inputs directly on the peers <a name="direct_inputs"></a>
+### Configure inputs on the peers <a name="direct_inputs"></a>
 
 If you decide not to use forwarders to handle your data inputs, you can set up inputs on each peer in the usual way; for example, by editing inputs.conf on the peers. 
 
+In Splunk Web:
+Settings > Forwarding and receiving > Configure Receiving > New
+Listen on this port: 9997
 
+When you add an input through Splunk Web, Splunk Enterprise adds that input to a copy of inputs.conf. The app context, that is, the Splunk app you are currently in when you configure the input, determines where Splunk Enterprise writes the inputs.conf file.
 
-### Multisite indexer clusters <a name="multisite_clusters"></a>
-
-Multisite indexer clusters allow you to maintain complete copies of your indexed data in multiple locations. This offers the advantages of enhanced disaster recovery and search affinity. You can specify the number of copies of data on each site. Multisite clusters are similar in most respects to basic, single-site clusters, with some differences in configuration and behavior. 
-
-For multisite clusters, you must also take into account the search head and peer node requirements of each site, as determined by your search affinity and disaster recovery needs. At a minimum, you will need (replication factor + 2) instances.
-
-__Configure the master node__  
-
-You configure the key attributes for the entire cluster on the master node. Here is an example of a multisite configuration for a master node:
-
+For example, if you navigated to the Settings page directly from the Search page and then added an input, Splunk Enterprise adds the input to ```op/splunk/etc/apps/search/local/inputs.conf```:
 ```
-[general]
-site = site1
-
-[clustering]
-mode = master
-multisite = true
-available_sites = site1,site2
-site_replication_factor = origin:2,total:3
-site_search_factor = origin:1,total:2
-pass4SymmKey = whatever
-cluster_label = cluster1
+[splunktcp://9997]
+connection_host = ip
 ```
-This example specifies that:
-
-* the instance is located on site1.
-* the instance is a cluster master node.
-* the cluster is multisite.
-* the cluster consists of two sites: site1 and site2.
-* the cluster's replication factor is the default "origin:2,total:3".
-* the cluster's search factor is "origin:1,total:2".
-* the cluster's security key is "whatever".
-* the cluster label is "cluster1."
- 
- Note the following:  
-* You specify the site attribute in the [general] stanza.
-* You specify all other multisite attributes in the [clustering] stanza.
-* You can locate the master on any site in the cluster, but each cluster has only one master.
-* You must set multisite=true.
-* You must list all cluster sites in the available_sites attribute.
-* You must set a site_replication_factor and a site_search_factor. For details, see Configure the site replication factor and Configure the site search factor.
-* The pass4SymmKey attribute, which sets the security key, must be the same across all cluster nodes. See Configure the indexer cluster with server.conf for details.
-* The cluster label is optional. It is useful for identifying the cluster in the monitoring console. 
-
 [top](#toc)
 
 
@@ -421,6 +456,48 @@ search_factor = 3
 pass4SymmKey = whatever
 cluster_label = cluster1
 ```
+### Multisite indexer clusters <a name="multisite_clusters"></a>
+
+Multisite indexer clusters allow you to maintain complete copies of your indexed data in multiple locations. This offers the advantages of enhanced disaster recovery and search affinity. You can specify the number of copies of data on each site. Multisite clusters are similar in most respects to basic, single-site clusters, with some differences in configuration and behavior. 
+
+For multisite clusters, you must also take into account the search head and peer node requirements of each site, as determined by your search affinity and disaster recovery needs. At a minimum, you will need (replication factor + 2) instances.
+
+__Configure the master node__  
+
+You configure the key attributes for the entire cluster on the master node in ```/opt/splunk/etc/system/local/server.conf```. Here is an example of a multisite configuration for a master node:
+```
+[general]
+site = site1
+
+[clustering]
+mode = master
+multisite = true
+available_sites = site1,site2
+site_replication_factor = origin:2,total:3
+site_search_factor = origin:1,total:2
+pass4SymmKey = whatever
+cluster_label = cluster1
+```
+This example specifies that:
+
+* the instance is located on site1.
+* the instance is a cluster master node.
+* the cluster is multisite.
+* the cluster consists of two sites: site1 and site2.
+* the cluster's replication factor is the default "origin:2,total:3".
+* the cluster's search factor is "origin:1,total:2".
+* the cluster's security key is "whatever".
+* the cluster label is "cluster1."
+ 
+ Note the following:  
+* You specify the site attribute in the [general] stanza.
+* You specify all other multisite attributes in the [clustering] stanza.
+* You can locate the master on any site in the cluster, but each cluster has only one master.
+* You must set multisite=true.
+* You must list all cluster sites in the available_sites attribute.
+* You must set a site_replication_factor and a site_search_factor. For details, see Configure the site replication factor and Configure the site search factor.
+* The pass4SymmKey attribute, which sets the security key, must be the same across all cluster nodes. See Configure the indexer cluster with server.conf for details.
+* The cluster label is optional. It is useful for identifying the cluster in the monitoring console. 
 
 ### Managing Configurations Across Peers <a name="managing_peer_configs"></a>
 
@@ -460,14 +537,98 @@ $SPLUNK_HOME/etc/master-apps/
 
 Caution: When the master distributes the bundle to the peers, it distributes the entire bundle, overwriting the entire contents of any configuration bundle previously distributed to the peers.
 
-The master-apps location is only for peer node files. The master does not use the files in that directory for its own configuration needs.
+__The master-apps location is only for peer node files__. The master does not use the files in that directory for its own configuration needs.
 
-__To distribute a new configuration bundle:  __
+### Configuring indexes.conf on a Cluster Master <a name="configuring_indexes_cluster"></a>
 
-Validate the bundle: ```splunk validate cluster-bundle```
-You can check the status of bundle validation ```splunk show cluster-bundle-status```
-Apply the bundle: ```splunk apply cluster-bundle```
-To avoid having to answer the prompt: ```splunk apply cluster-bundle --answer-yes```
+If you are using a index cluster, you must configure custom indexes in an indexes.conf file on the Cluster Master in a ```/opt/splunk/etc/master-apps/<app-name>/local/``` directory.
+
+The ```maxTotalDataSizeMB``` and ```frozenTimePeriodInSecs``` attributes in indexes.conf determine when buckets roll from cold to frozen. 
+
+If you set the coldToFrozenDir attribute in indexes.conf, the indexer will automatically copy frozen buckets to the specified location before erasing the data from the index.
+
+The following is an example of typical custom index entries in an indexes.conf file:  
+```
+[<index_name>]
+homePath   = volume:primary/index_name/db
+coldPath   = volume:primary/index_name/colddb
+thawedPath = $SPLUNK_DB/index_name/thaweddb
+# Seting the repFactor attribute to "auto" causes the index's data to be replicated to other peers in the cluster
+# By default, repFactor is set to 0, which means that the index will not be replicated
+repFactor = auto
+# index size of 30 GB = 30 x 1024 MB
+maxTotalDataSizeMB = 30720
+# only keep data for 30 days before archiving (default is 6 years)
+frozenTimePeriodInSecs = 2592000
+# you can specify a frozen archive location
+# if no fozen archive location is specified, the data is discarded
+# coldToFrozenDir = "<path to frozen archive>"
+```
+
+### Configuring props.conf files <a name="props_conf"></a>
+
+The props.conf (and transforms.conf, if applicable) file is distributed across the indexers ('search peers') to tell Splunk how to parse incoming data. You configure props.conf & transforms.conf in the ```/opt/splunk/etc/master-apps/<app-name>/local/``` directories. 
+
+When the cluster bundle is applied (distributed to the indexers / search peers) these same files will be located in ```/opt/splunk/etc/apps/<app-name>/local/``` directories on each indexer.
+
+Here is an assorted example of some props.conf entries; check the options for each of these entries in the [props.conf.example](./README/props.conf.example) or [props.conf.spec](./README/props.conf.spec) files:
+```
+BREAK_ONLY_BEFORE = ([\r\n]+)
+DATETIME_CONFIG = 
+MAX_TIMESTAMP_LOOKAHEAD = 30
+NO_BINARY_CHECK = true
+TIME_FORMAT = %Y-%m-%dT%H:%M:%S.%3N
+TIME_PREFIX = timestamp="
+TRUNCATE = 0
+SHOULD_LINEMERGE = false
+LINE_BREAKER = ([\r\n]+)\[\d{4}-\w{3}-\d{1,2}\s\d{1,2}:\d{1,2}:\d{1,2}\.\d{1,3}\]\s\w+
+PREAMBLE_REGEX = ^log4j\:[^\r\n]+[\r\n][^:]+[^\s]+[^\r\n]
+KV_MODE = json
+
+# Used with a transforms.conf file
+# ID the sourcetype to perform the transform on:
+[sourcetype::mssqlserver]
+# Then TRANSFORMS-<arbitrary name> = <stanza name in transforms.conf>
+TRANSFORMS-DBHost = db_host
+```
+
+### Configuring transforms.conf files <a name="transforms.conf"></a>
+
+The transforms.conf file is used to 
+
+Here are some assorted samples of transforms.conf entires; check the options for each of these entries in the [transforms.conf.example](./README/transforms.conf.example) or [transforms.conf.spec](./README/transforms.conf.spec) files:
+
+```
+# Used with the props.conf file in the previous example
+# [db_host] matches with `TRANSFORMS-DBHost = db_host' in props.conf
+[db_host]
+REGEX = MachineName="(?<hostname>.*?)"
+# Note that 'hostname' must match the RegEx field name above
+FORMAT = hostname::$1
+# use MetaData:Host to replace the default host entry in an event
+DEST_KEY = MetaData:Host
+
+
+# Another example
+[get_path]
+SOURCE_KEY = uri
+REGEX = ^(?<path>[^\s\?]+) 
+
+[get_query_string]
+SOURCE_KEY = uri
+REGEX = \?(<query_string>[^\s]+) 
+```
+
+### Applying a cluster bundle <a name="apply_cluster_bundle"></a>
+
+__To distribute a new configuration bundle: __
+
+* Validate the bundle: ```splunk validate cluster-bundle```
+* You can check the status of bundle validation ```splunk show cluster-bundle-status```
+* Apply the bundle: ```splunk apply cluster-bundle```
+* To avoid having to answer the prompt: ```splunk apply cluster-bundle --answer-yes```
+
+__NOTE: Be sure to validate the cluster bunde before running ```splunk apply``` - if you apply a bundle with errrors in the indexes.conf file you could bring the entire indexer cluster down, necessitating fixing the error manually on each indexer and restarting it.__
 
 You can also distribute a new configuration bundle from the GUI on the Cluster Master:
 
@@ -499,33 +660,7 @@ A Restart occurs when:
 * You make any of the indexes.conf changes described in Determine which indexes.conf changes require restart.
 * You delete an existing app from the configuration bundle.
 
-### Configuring Indexes on a Cluster <a name="configuring_indexes_cluster"></a>
-
-If you are using a index cluster, you must configure custom indexes in the indexes.conf on the Cluster Master in the application-specific directory under the ```/opt/splunk/etc/master-apps/...``` directory.
-
-The ```maxTotalDataSizeMB``` and ```frozenTimePeriodInSecs``` attributes in indexes.conf determine when buckets roll from cold to frozen. 
-
-If you set the coldToFrozenDir attribute in indexes.conf, the indexer will automatically copy frozen buckets to the specified location before erasing the data from the index.
-
-The following is an example of typical custom index entries in an indexes.conf file:  
-```
-[<index_name>]
-homePath   = volume:primary/index_name/db
-coldPath   = volume:primary/index_name/colddb
-thawedPath = $SPLUNK_DB/index_name/thaweddb
-# Seting the repFactor attribute to "auto" causes the index's data to be replicated to other peers in the cluster
-# By default, repFactor is set to 0, which means that the index will not be replicated
-repFactor = auto
-# index size of 30 GB = 30 x 1024 MB
-maxTotalDataSizeMB = 30720
-# only keep data for 30 days before archiving (default is 6 years)
-frozenTimePeriodInSecs = 2592000
-# you can specify a frozen archive location
-# if no fozen archive location is specified, the data is discarded
-# coldToFrozenDir = "<path to frozen archive>"
-```
-
-__Restarting a Cluster Master and/or peers__
+### Restarting a Cluster Master or peers <a name="restart_cm"></a>
 
 When restarting cluster peers, you should use Splunk Web or one of the cluster-aware CLI commands, such as splunk offline or splunk rolling-restart. Do not use splunk restart.
 
@@ -556,16 +691,19 @@ There are two basic options for deploying a distributed search environment:
 
 In either case, you must set the initial configuration to create a search head:
 
-__Configure a Splunk instance as a search head in an indexer cluster:__
+__Configure a single Splunk instance as a search head in an indexer cluster:__
 
 1. Click Settings in the upper right corner of Splunk Web.
 2. In the Distributed environment group, click Indexer clustering.
-3. Select Enable clustering.
+3. Select Enable clustering. You will get selections:
+	* Master node
+	* Peer node
+	* Search head node
 4. Select Search head node and click Next.
 5. There are a few fields to fill out:
 
 * Master URI. Enter the master's URI, including its management port. For example: https://10.152.31.202:8089.
-* Security key. This is the key that authenticates communication between the master and the peers and search heads. The key must be the same across all cluster nodes. Set the same value here that you previously set on the master node.
+* Security key. This is the key that authenticates communication between the master and the peers and search heads. The key must be the same across all cluster nodes. Set the same value here that you previously set on the master node.  An example of a security key is ```MyS3cur1tyk3y```
 
 6. Click Enable search head node.
 
@@ -581,7 +719,7 @@ __Configure a Splunk instance as a search head in an indexer cluster:__
 
 __Creating a search head by editing server.conf:__
 
-You can also create a search head by editing the server.conf file in ```/opt/splunk/etc/system/local```; note the 'mode = searchhead' entry:
+You can also create a search head by editing the __server.conf__ file in ```/opt/splunk/etc/system/local```; note the 'mode = searchhead' entry:
 ```
 [clustering]
 master_uri = https://10.152.31.202:8089
@@ -639,13 +777,37 @@ The knowledge bundle gets distributed to the ```$SPLUNK_HOME/var/run/searchpeers
 On a search head cluster, you can view replication status from the search head cluster captain:  
 Settings > Distributed Search > Search Peers  
 
-__Configure a Search Head cluster__
+__1. Create a Deployer first__
 
+To update member configurations of a search head cluster, you need a Splunk Enterprise instance that functions as the deployer. See: [Create a Deployer](#create_deployer)
+
+#### Configure the Search Head cluster members <a name="configure_sh_cluster_members"></a>
+
+For each instance that you want to include in the search head cluster, run the ```splunk init shcluster-config``` command and restart the instance:
+```
+splunk init shcluster-config -auth <username>:<password> -mgmt_uri <URI>:<management_port> -replication_port <replication_port> -replication_factor <n> -conf_deploy_fetch_url <URL>:<management_port> -secret <security_key> -shcluster_label <label>
+```
+For example:
+```
+splunk init shcluster-config -auth admin:changed -mgmt_uri https://sh1.example.com:8089 -replication_port 34567 -replication_factor 2 -conf_deploy_fetch_url https://10.160.31.200:8089 -secret mykey -shcluster_label shcluster1
+
+splunk restart 
+```
+__Notes: __
+* This command is only for cluster members. Do not run this command on the deployer.
+ * The -auth parameter specifies your current login credentials for this instance. This parameter is required.
+* The -mgmt_uri parameter specifies the URI and management port for this instance. You must use the fully qualified domain name. This parameter is required.
+* The -replication_port parameter specifies the port that the instance uses to listen for search artifacts streamed from the other cluster members. You can specify any available, unused port as the replication port. Do not reuse the instance's management or receiving ports. This parameter is required.
+* The -replication_factor parameter determines the number of copies of each search artifact that the cluster maintains. All cluster members must use the same replication factor. This parameter is optional. If not explicitly set, the replication factor defaults to 3.
+* The -conf_deploy_fetch_url parameter specifies the URL and management port for the deployer instance. This parameter is optional during initialization, but you do need to set it before you can use the deployer functionality. See "Use the deployer to distribute apps and configuration updates."
+* The -secret parameter specifies the security key that authenticates communication between the cluster members and between each member and the deployer. The key must be the same across all cluster members and the deployer. 
+ 
 __Required number of instances__
 
 The cluster must contain at a minimum the number of members needed to fulfill both of these requirements:
 
-* Three members, so that the cluster can continue to function if one member goes down. See Captain election process has deployment implications.
+* Three members, so that the cluster can continue to function if one member goes down.  
+
 * The replication factor number of instances. See Choose the replication factor for the search head cluster. For example, if your replication factor is either 2 or 3, you need at least three instances. If your replication factor is 5, you need at least five instances.
 
 You can optionally add more members to boost search and user capacity. Search head clustering supports up to 50 members in a single cluster.
@@ -663,17 +825,27 @@ These ports must be in your firewall's list of allowed ports.
 
 Caution: Do not change the management port on any of the members while they are participating in the cluster. If you need to change the management port, you must first remove the member from the cluster.
 
-__Deployer__
+Select one of the initialized instances to be the first cluster captain. It does not matter which instance you select for this role.
 
-To update member configurations of a search head cluster, you need a Splunk Enterprise instance that functions as the deployer. 
+__2. Run the splunk bootstrap shcluster-captain command on a selected instance:__
 
-[Create a Deployer](#create_deployer)
+```splunk bootstrap shcluster-captain -servers_list "<URI>:<management_port>,<URI>:<management_port>,..." -auth <username>:<password>```
+
+Note the following:
+
+* This command designates the specified instance as the first cluster captain. Run this command on only a single instance.
+* The -servers_list parameter contains a comma-separated list of the cluster members, including the member that you are running the command on. The members are identified by URI and management port. This parameter is required.
+* Important: The URIs that you specify in -servers_list must be exactly the same as the ones that you specified earlier when you initialized each member, in the -mgmt_uri parameter. You cannot, for example, use ```https://foo.example.com:8089``` during initialization and ```https://foo.subdomain.example.com:8089``` here, even if they resolve to the same node.
+
+Here is an example of the bootstrap command:
+```
+splunk bootstrap shcluster-captain -servers_list "https://sh1.example.com:8089,https://sh2.example.com:8089,https://sh3.example.com:8089,https://sh4.exam
+```
 
 __Search Head Pools__
 You cannot enable search head clustering on an instance that is part of a search head pool. For information on migrating, see <a href="http://docs.splunk.com/Documentation/Splunk/6.5.3/DistSearch/Migratefromsearchheadpooling" target="_blank">Migrate from a search head pool to a search head cluster</a>
 
-
-__Edit distsearch.conf__
+__distsearch.conf__
 
 The settings available through Splunk Web provide sufficient options for most configurations.   Some advanced configuration settings, however, are only available by directly editing distsearch.conf. This section discusses only the configuration settings necessary for connecting search heads to search peers. For information on the advanced configuration options, see the distsearch.conf spec file.  
 
@@ -690,7 +862,7 @@ __Add the search peers__
 
 3. Restart the search head.
 
-__Distribute the key files__
+__Distributing key files__
 
 If you add search peers via Splunk Web or the CLI, Splunk Enterprise automatically configures authentication. However, if you add peers by editing distsearch.conf, you must distribute the key files manually. After adding the search peers and restarting the search head, as described above:
 
@@ -716,7 +888,7 @@ For example, if you have two search heads, named A and B, and they both need to 
 
 __Forward internal logs to the search peers__
 
-Create an outputs.conf file on each search head that configures the component for load-balanced forwarding across the set of search peers (indexers). You must also turn off indexing so that the component does not both retain the data locally as well as forward it to the search peers.
+Create an outputs.conf file that configures the search heads for load-balanced forwarding across the set of search peers (indexers). You must also turn off indexing so they do not both retain the data locally as well as forward it to the search peers.
 	
 [Forward internal data to search peers](#fwd_internal_data)
 
@@ -748,13 +920,173 @@ To integrate search head cluster members with a multisite indexer cluster, confi
 
 ```splunk restart```
 
+
+```
+[shclustering]
+conf_deploy_fetch_url = https://<deployerHostname>:8089
+disabled = 0
+mgmt_uri = https://fldcvpsla9448.wdw.disney.com:8089
+pass4SymmKey = <key>
+replication_factor = 2
+id = <GUID>
+
+[clustering]
+master_uri = https://<clusterMasterHostname>:8089
+mode = searchhead
+multisite = true
+pass4SymmKey = <key>
+```
+
+#### Final Steps <a name="final_sh_steps"></a>
+
+* Add users to the search heads
+* Install a load balancer in front of the search heads. This step is optional. See "Use a load balancer with search head clustering."
+* Use the deployer to distribute apps and configuration updates to the search heads.
+
 [top](#toc)
 
 ## Create a Deployment Server <a name="create_deployment_svr"></a>
 
-To be completed...
+To set up a deployment server, you need to configure both the deployment server and the deployment clients, although most configuration occurs on the deployment server side. The main actions you need to perform are these:
 
-Note: You can use a deployment server to distribute updates to search heads in indexer clusters, as long as they are standalone search heads. You cannot use the deployment server to distribute updates to members of a search head cluster - you must use a Deployer.  
+* Configure the deployment clients to connect to a deployment server (Universal Forwarders, etc.)
+* Create directories on the deployment server to hold the deployment apps and populate them with content (inputs.conf, etc.)
+* Create mappings between deployment clients and app directories (the server classes)(serverclass.conf)  
+
+Notes: 
+You can use a deployment server to distribute updates to search heads in indexer clusters, as long as they are standalone search heads. You cannot use the deployment server to distribute updates to members of a search head cluster - you must use a Deployer.  
+
+Because of high CPU and memory usage during app downloads, it is recommended that the deployment server instance reside on a dedicated machine.  
+
+### Create Deployment apps <a name="create_deployment_apps"></a>
+
+A deployment app consists of any arbitrary content that you want to download to a set of deployment clients. The content can include:
+
+* A Splunk Enterprise app (such as those on Splunkbase)
+* A set of Splunk Enterprise configurations
+* Other content, such as scripts, images, and supporting files
+
+You add a deployment app by creating a directory for it on the deployment server. 
+
+You create separate directories for each deployment app in a special location on the deployment server. The default location is ```$SPLUNK_HOME/etc/deployment-apps```, but this is configurable through the repositoryLocation attribute in serverclass.conf. Underneath this location, each app must have its own subdirectory. The name of the subdirectory serves as the app name in the forwarder management interface. By creating an app directory, you have effectively created the app itself, even if the directory does not yet contain any content.
+
+After creating any new app directories, you must run the CLI reload deploy-server command to make the deployment server aware of them: ``` splunk reload deploy-server```
+
+Note: After an app is downloaded, it resides under ```$SPLUNK_HOME/etc/apps``` on the deployment clients.
+
+An example of how to create an app and its settings that can be deployed from a Deployment Server is:
+
+1. Create an app-name subdirectory under ```/opt/splunk/etc/deployment-apps/`` 
+2. Create a /local directory under that subdirectory
+3. In the /local directory, create an __inputs.conf__ file to specify the inputs 
+
+For example, ```/opt/splunk/etc/deployment-apps/MyApp/local/inputs.conf``` might contain:
+
+```
+[monitor:///var/log/nodejs*/*/error*.log]
+index = myapp
+sourcetype = app_err
+ignoreOlderThan = 30d
+
+[monitor:///var/log/nodejs*/*/out*.log]
+index = myapp
+sourcetype = app_out
+ignoreOlderThan = 30d
+```
+These entries define:
+
+* The log file to be monitored
+* The index to put the log data into
+* The sourcetype to apply to this input
+* An entry to tell Splunk not to ingest any log entries older than 30 days
+
+See [inputs.conf.example](./README/inputs.conf.example) and [inputs.conf.spec](./README/inputs.conf.spec) for more option settings.  
+
+### Define a server class <a name="define_serverclass"></a>
+
+A __server class__ is a mapping between deployment clients and apps. It tells the deployment server which apps to send to which clients. Therefore, when you define a server class, you associate one or more apps with a group of deployment clients, with these steps:
+
+1. Create the server class.
+2. Specify one or more deployment apps for the server class.
+3. Specify the clients that belong to the server class.
+
+This info gets saved in a serverclass.conf file in ```/opt/splunk/etc/system/local/```, although you could also have: ```/opt/splunk/etc/apps/SomeApp/local/serverclass.conf``` in which case the settings would be merged by standard Splunk precedence.
+
+```
+[serverClass:app_name]
+# Set the attribute to ipAddress, hostname, DNSname, or clientName
+whitelist.0 = servername(0001|0002|0003).yourfqdn.com
+whitelist.1 = servername(0027|0028|0030).yourfqdn.com
+whitelist.2=*.fflanda.com
+
+blacklist.0=printer.fflanda.com
+blacklist.1=scanner.fflanda.com
+
+restartSplunkd = true
+[serverClass:app_name:app:app_directory]
+[serverClass:app_name:app:wdpr_forwarderfullspeed]
+
+# There is also a machineTypesFilter which will match any machine types 
+# in a comma-delimited list. Common machine types are: 
+# linux-x86_64, windows-x64, linux-i686, 
+# freebsd-i386, darwin-i386, sunos-sun4u, 
+# linux-x86_64, sunos-i86pc, freebsd-amd64.
+
+```
+
+You can configure the serverclass.conf file directly, or use Splunk Web:
+
+* Settings > Forwarder management
+* Server Classes (tab) > New Server class   
+	Note: Server class names must be unique.  
+* Add Apps (tab)
+* Add Clients (tab)
+
+__Deploy Apps__
+
+When you create a server class, you map a set of clients to a set of apps. After you specify both the client filters and the apps, the deployment server automatically deploys the apps to the qualifying clients.
+
+After you edit the content of an app, you must reload the deployment server so that the deployment server learns of the changed app. It then redeploys the app to the mapped set of clients.
+
+To reload the deployment server, use the CLI ```reload deploy-server``` 
+
+### Configure the deployment client <a name="configure_deployment_client"></a>
+
+The deployment client (such as Universal Forwarders) 
+
+On the deployment client (such as a Universal Forwarder), run these CLI commands:
+
+```splunk set deploy-poll <IP_address/hostname>:<management_port>```
+```splunk restart```
+
+Use the IP_address/hostname and management_port of the deployment server you want the client to connect with.
+
+You can also directly create and edit a ```deploymentclient.conf``` file in ```$SPLUNK_HOME/etc/system/local/```
+
+The deploymentclient.conf file requires two stanzas:
+
+[deployment-client]	Configures a number of attributes, including where to find new or updated content. You do not usually need to change the default values for this stanza.
+
+[target-broker:deploymentServer]	Specifies the location of this client's deployment server. deploymentServer is the default name for a deployment server. You must specify the deployment server under this stanza.
+```
+[deployment-client]
+# Set the phoneHome period to 10 minutes (default is 30 seconds)
+phoneHomeIntervalInSecs = 600
+# optional clientName to display in the Deployment Server 
+# clientName = <deploymentClientName>
+
+[target-broker:deploymentServer]
+# set this to the Deployment Server url
+targetUri = <deploymentServerHostname>:8089
+```
+
+__Get deployment client information__
+
+You can find information about the deployment client from two locations:
+* On the deployment client itself:  Settings > Server settings > Deployment client settings
+* On the deployment server: Settings > Forwarder management
+
+To disable a deployment client: ```splunk disable deploy-client```
 
 [Forward internal data to search peers](#fwd_internal_data)
 
@@ -783,7 +1115,31 @@ __Important:__
 
 __Creating a Deployer__
 
-To be completed...
+__*Deployer functionality is automatically enabled on all Splunk Enterprise instances*.__ The main configuration step is to specify the deployer's security key, as described in the next step. Later in the deployment process, you point the cluster members at this deployer instance, so that they have access to it.
+
+__Configure the deployer's security key__
+
+The deployer uses the security key to authenticate communication with the cluster members. The cluster members also use it to authenticate with each other. You must set the key to the same value on all cluster members and the deployer. You set the key on the cluster members when you initialize them.
+
+To set the key on the deployer, specify the pass4SymmKey attribute in either the [general] or the [shclustering] stanza of the deployer's server.conf file. For example:
+```
+[shclustering]
+pass4SymmKey = yoursecuritykey
+```
+__Set the search head cluster label on the deployer.__
+
+The search head cluster label is useful for identifying the cluster in the monitoring console. This parameter is optional, but if you configure it on one member, you must configure it with the same value on all members, as well as on the deployer.
+
+To set the label, specify the shcluster_label attribute in the [shclustering] stanza of the deployer's server.conf file. For example:
+```
+[shclustering]
+shcluster_label = shcluster1
+```
+
+To be completed... 
+* Install apps on the Deployer & deploy to the search head cluster  
+* Directories on the Deployer to put apps & knowledge objects in  
+* Where those apps & knowlege objects end up on the search heads  
 
 [Forward internal data to search peers](#fwd_internal_data)
 
@@ -802,7 +1158,7 @@ Each instance in a distributed search deployment must have access to a license p
 
 [top](#toc)
 
-## Install a Universal Forwarder <a name="install_uf"></a>
+## Install and Configure a Universal Forwarder <a name="install_uf"></a>
 
 __Forwarding data to an indexer__
 To forward remote data to an indexer, you use forwarders, which are Splunk Enterprise instances that receive data inputs and then consolidate and send the data to a Splunk Enterprise indexer.  
@@ -818,29 +1174,31 @@ Both types of forwarders tag data with metadata such as host, source, and source
 Forwarders allow you to use resources efficiently when processing large quantities or disparate types of data coming from remote sources. They also offer capabilities for load balancing, data filtering, and routing.  
 
 __Manual Installation__
+
 * Access the Splunk website:  
 <a href="https://www.splunk.com/en_us/download/universal-forwarder.html#tabs/linux" target="_blank">Download Splunk Universal Forwarder</a>
 
 __Note: You will have to create an account and/or login using your Splunk user ID & password.__
 
 * Select and download the appropriate rpm package (linux > 64-bit > .rpm)
+* On the next Splunk web page (that shows up after you select a download), click the 'Download via Command Line (wget)' link and copy the string - for example:
+```
+wget -O splunkforwarder-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=6.5.3&product=universalforwarder&filename=splunkforwarder-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm&wget=true'
+```
+Or...
 * Use ftp or WinSCP to copy the package to the splunk server.  
 * ```sudo su```  (root)
-* Change permissions on the file:
-```chmod 744 splunkforwarder-6.5.3-36937ad027d4-linux-2.6-x86_64.rpm```
 * Install the package
 ```rpm -i splunkforwarder-<…>-linux-2.6-x86_64.rpm```
-
 * Start the Forwarder:
 ```cd /opt/splunkforwarder/bin/```
 ```./splunk start```
 
-
 __Remote / Automated Installation__
-You can craft an installation script using the following links as starting points:  
+You can craft an installation script using the following links as starting points, and leveraging the __wget__ command:
 
 <a href="http://docs.splunk.com/Documentation/Forwarder/6.5.3/Forwarder/Installanixuniversalforwarderremotelywithastaticconfiguration" target="_blank">docs.splunk.com/Documentation/Forwarder/6.5.3/Forwarder/Installanixuniversalforwarderremotelywithastaticconfiguration</a>
-<a href="https//answers.splunk.com/answers/34896/simple-installation-script-for-universal-forwarder" target="_blank">answers.splunk.com/answers/34896/simple-installation-script-for-universal-forwarder</a>
+<a href="https://answers.splunk.com/answers/34896/simple-installation-script-for-universal-forwarder.html" target="_blank">answers.splunk.com/answers/34896/simple-installation-script-for-universal-forwarder</a>
 <a href="https://answers.splunk.com/answers/100989/forwarder-installation-script" target="_blank">answers.splunk.com/answers/100989/forwarder-installation-script</a>
 
 For most types of cluster deployments, you should enable indexer acknowledgment for the forwarders sending data to the peer. 
@@ -848,6 +1206,7 @@ For most types of cluster deployments, you should enable indexer acknowledgment 
 You can simplify the process of connecting forwarders to peer nodes by using the indexer discovery feature.
 
 ### Configuring inputs.conf <a name="inputs.conf"></a>
+
 
 
 
