@@ -14,6 +14,8 @@ Complete the fields per the following image and field data examples for a report
 
 ![Saved Search Report Setup 1](/images/saved_search_settings_1.png)  
 
+The report is configured to collect data from the previous whole hour using the Earliest = -1h@h & Latest = -0h@h time specifiers.  
+
 The search string used in the above report is:  
 ```
 eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_message=* | rex field=nge_exception_message mode=sed "s/(#\d+])/#xxxx]/g" 
@@ -43,11 +45,9 @@ __Notes on Search String Attributes__
 	* info_max_time  
 	* info_search_time  
 
-* The __eval _time = info_max_time__ creates a timestamp for the event from the info_max_time epoch value that reflects the *last* event in the time range. The _time timestamp would otherwise reflect the time of the *first* event, which can be misleading.  
+* The __eval _time = info_max_time__ creates a timestamp for the event from the info_max_time epoch value that reflects the *end* of the time range. The _time timestamp would otherwise reflect the time of the *start* of the time range, which can be misleading.  
 
 * The designated fields, along with the rest of the addinfo fields, are added to the designated summary index as events.
-
-The report is configured to collect data from the previous whole hour using the Earliest = -1h@h & Latest = -0h@h time specifiers.
 
 
 ![Saved Search Report Setup 2](/images/saved_search_settings_2.png)  
