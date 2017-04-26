@@ -22,16 +22,18 @@ repFactor = auto
 # as a historical record
 ```
 
-## Creating a Scheduled Saved Search  
+After configuring the index, apply the cluster bundle or restart Splunk as needed so that the new summary index will appear as a selection during scheduled report creation.
 
-You can create a Saved Search that runs periodically to populate the summary index with time series data for later use. 
+## Creating a Scheduled Search Report  
+
+You can create a Saved Search from a report that runs periodically to populate the summary index with time series data for later use. 
 
 On a Search Head:  
 Settings > Searches, reports, and alerts  
 Select the App context to create the saved search in, if applicable  
 New  
 
-Complete the fields per the field data examples in the following images to create a report named 'Top 20 NGE Exception Messages':  
+Complete the data fields per examples in the following images to create a report named 'Top 20 NGE Exception Messages':  
 
 ![Saved Search Report Setup 1](/images/saved_search_settings_1.png)  
 
@@ -73,8 +75,11 @@ The 'eventtype' in this example included an index and multiple host specifiers.
 
 * The designated fields, along with the rest of the addinfo fields, are added to the designated summary index as events.
 
+This report is set to run at 5 minutes after each hour:  
 
 ![Saved Search Report Setup 2](/images/saved_search_settings_2.png)  
+
+Near the bottom of the form, click to enable Summary indexing, select the (previously created) summary index, and if desired, any additional field(s) to help identify these events in the summary index:  
 
 ![Saved Search Report Setup 3](/images/saved_search_settings_3.png)  
 
