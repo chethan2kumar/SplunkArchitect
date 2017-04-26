@@ -148,7 +148,7 @@ index=summary_nge_exception_messages datasource=top_20_nge_exception_messages | 
 
 ### Additional Notes <a name="notes"></a>
 
-#### Populating a Summary Index <a name="populating></a>
+#### Populating a Summary Index <a name="populating"></a>
 
 After creating a scheduled search report, you will continue to add events to your summary index at the configured incremental times. You can also populate the summary index with previous / older data using a derivative of the following search string:
 
