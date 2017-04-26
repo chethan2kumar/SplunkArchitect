@@ -37,7 +37,7 @@ eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_message=* | 
 
 __Notes on Search String Attributes__
 
-* The 'rex' entries remove and replace identifiers that may be unique with generic 'xxxx' or '-data-' values so that the exception messages are reduced to just their 'types'.  
+* The 'rex' entries remove and replace identifiers that may be unique with generic 'xxxx' or '-data-' values so that the exception messages are reduced to just their 'types'.
 
 * addinfo adds time info fields to each event including:  
 
@@ -45,7 +45,7 @@ __Notes on Search String Attributes__
 	* info_max_time  
 	* info_search_time  
 
-* The __eval _time = info_max_time__ creates a timestamp for the event from the info_max_time epoch value that reflects the *end* of the time range. The _time timestamp would otherwise reflect the time of the *start* of the time range, which can be misleading.  
+* The __eval _time = info_max_time__ creates a timestamp for the event from the info_max_time epoch value that reflects the *end* of the time range. The _time timestamp would otherwise reflect the time of the *start* of the time range, which can be misleading and doesn't lend itself well to time series analysis.  
 
 * The designated fields, along with the rest of the addinfo fields, are added to the designated summary index as events.
 
@@ -56,13 +56,13 @@ __Notes on Search String Attributes__
 
 
 
-Saving the scheduled report with summary indexing creates the following entries in ```/opt/splunk/etc/apps/wdpr_bog_dashboard/local/savedsearches.conf```:
+Saving the scheduled report with summary indexing creates the following entries in ```/opt/splunk/etc/apps/wdpr_bog_dashboard/local/savedsearches.conf```; __notice the additional 'datasource' field__ which has been added so these events can be found / isolated from a summary index that may contain other event types:
 
 ```
 [Top 20 NGE Exception Messages]
 action.summary_index = 1
 action.summary_index._name = summary_nge_exception_messages
-action.summary_index.source = top_20_nge_exception_messages
+action.summary_index.datasource = top_20_nge_exception_messages
 alert.digest_mode = True
 alert.suppress = 0
 alert.track = 0
@@ -89,6 +89,7 @@ search = eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_mes
 | eval end=strftime(info_max_time, "%Y-%m-%d %T") \
 | fields start end count percent nge_exception_message\
 ```
+
 
 
 > Written with [StackEdit](https://stackedit.io/).
