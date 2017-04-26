@@ -1,9 +1,9 @@
 
 # The Zen of Search  <a name="top"><a/>
 
-[gentimes](#gentimes)
-[map](#map)
-[Search Command Quick Reference Table](#quickref)
+[gentimes](#gentimes)  
+[map](#map)  
+[Search Command Quick Reference Table](#quickref)  
 
 
 #### __gentimes__ <a name="gentimes"></a>
@@ -83,7 +83,7 @@ Some of these commands share functions. For a list of the functions with descrip
 | format | Takes the results of a subsearch and formats them into a single result. |  | 
 | from | Retrieves data from a dataset, such as a data model dataset, a CSV lookup, a KV Store lookup, a saved search, or a table dataset. |  | 
 | gauge | Transforms results into a format suitable for display by the Gauge chart types. |  | 
-| gentimes | Generates time-range results. | map | The gentimes command is a generating command and should be the first command in the search. Generating commands use a leading pipe character. Feed it a start datetime (MM/DD/YYYY[:HH:MM:SS])and optional end datetime and/or  increment. Example: All hourly time ranges from December 1 to December 5 in 2016: ```gentimes start=12/1/16 end=12/5/16 increment=1h``` |
+| gentimes | Generates time-range results. | map | The gentimes command is a generating command and should be the first command in the search. __Generating commands use a leading pipe character__. Feed it a start datetime (MM/DD/YYYY[:HH:MM:SS])and optional end datetime and/or  increment. Example: All hourly time ranges from December 1 to December 5 in 2016: ```gentimes start=12/1/16 end=12/5/16 increment=1h``` |
 | geom | Adds a field, named "geom", to each event. This field contains geographic data structures for polygon geometry in JSON and is used for the choropleth map visualization. | geomfilter | 
 | geomfilter | Accepts two points that specify a bounding box for clipping a choropleth map. Points that fall outside of the bounding box are filtered out. | geom | 
 | geostats | Generate statistics which are clustered into geographical bins to be rendered on a world map. | stats, xyseries | 
