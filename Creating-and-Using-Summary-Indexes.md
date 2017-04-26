@@ -1,13 +1,13 @@
-# Creating and Using Summary Indexes
+# Creating and Using Summary Indexes <a name="top"></a>
 
 A summary index is a designated Splunk index that stores the results of a scheduled report, when you enable summary indexing for the report. Summary indexing lets you run fast searches over large data sets by spreading out the cost of a computationally expensive report over time. To achieve this, the search that populates the summary index runs on a frequent, recurring basis and extracts the specific data that you require. You can then run fast and efficient searches against this small subset of data in the summary index.  
 
 Summary indexes are also useful for storing historical time series data for statistical analysis, anomaly detection, and related machine learning efforts.  
 
-[Creating a Summary Index](#create_index)  
-[Creating a Scheduled Search Report](#create_report)  
-[Using a Summary Index](#using_summary_index)  
-[Additional Notes](#notes)
+1. [Creating a Summary Index](#create_index)  
+2. [Creating a Scheduled Search Report](#create_report)  
+3. [Using a Summary Index](#using_summary_index)  
+4. [Additional Notes](#notes)
 	* [Using the Delete command](#delete)
 	* [Troubleshooting](#troubleshooting)
 	
@@ -33,6 +33,8 @@ repFactor = auto
 ```
 
 After configuring the index, apply the cluster bundle or restart Splunk as needed so that the new summary index will appear as a selection during scheduled report creation.
+
+[Top](#top)
 
 ## Creating a Scheduled Search Report  <a name="create_report"></a>
 
@@ -93,8 +95,6 @@ Near the bottom of the form, click to enable Summary indexing, select the (previ
 
 ![Saved Search Report Setup 3](/images/saved_search_settings_3.png)  
 
-
-
 Saving the scheduled report with summary indexing creates the following entries in ```/opt/splunk/etc/apps/wdpr_bog_dashboard/local/savedsearches.conf```; __notice the additional 'datasource' field__ which has been added so these events can be found / isolated from a summary index that may contain other event types.
 
 Be aware that by default Splunk assigns the __source__ field to the name of the generating report - "Top 20 NGE Exception Messages" in this case - and the __sourcetype__ field to 'stash', which  is how splunk knows that data is already in splunk and the summary data will not be charged against the license.  
@@ -132,6 +132,7 @@ search = eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_mes
 | eval end=strftime(info_max_time, "%Y-%m-%d %T") \
 | fields start end count percent nge_exception_message\
 ```
+[Top](#top)
 
 ### Using a Summary Index <a name="using_summary_index"></a>
 
@@ -142,6 +143,7 @@ index=summary_nge_exception_messages datasource=top_20_nge_exception_messages | 
 
 ![Summary Index Search Example](/images/summary_index_search_example.png) 
 
+[Top](#top)
 
 ### Additional Notes <a name="notes"></a>
 
@@ -161,8 +163,9 @@ The example below illustrates how to delete events from a summary index:
 ```
 
 ```
+[Top](#top)
 
-#### Troubleshooting 
+#### Troubleshooting <a name="troubleshooting"></a>
 
 You can verify that the scheduled report is running and validate the run parameters by searching the scheduler.log. Set the time range to include the last report run time and search for the report name:
 
@@ -180,5 +183,6 @@ This search may help if you're sure the other report settings are correct and yo
 
 ```index=_internal source=*scheduler.log "Top 20 NGE Exception Messages" | stats count by status```
 
+[Top](#top)
 
 > Written with [StackEdit](https://stackedit.io/) by James H. Baxter.
