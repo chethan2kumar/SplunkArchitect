@@ -95,7 +95,7 @@ Saving the scheduled report with summary indexing creates the following entries 
 
 Be aware that by default Splunk assigns the __source__ field to the name of the generating report - "Top 20 NGE Exception Messages" in this case - and the __sourcetype__ field to 'stash', which  is how splunk knows that data is already in splunk and the summary data will not be charged against the license.  
 
-I have found that if you add an additional field called 'source' and give it a value, each event will contain two 'source' fields - one will have 'Top 20 NGE Exception Messages', for example, and the other will have the assigned value - such as 'top_20_nge_exception_messages" - but performing a search based on the 2nd 'source' field does not work reliably, so best practice is to avoid using or reassigning either of these default fields and just use a new, unique field name such as 'datasource'.
+I have found that if you add an additional field called 'source' and give it a value, each event will contain two 'source' fields - one will have 'Top 20 NGE Exception Messages', for example, and the other will have the assigned value - such as 'top_20_nge_exception_messages" - but performing a search based on the 2nd 'source' field does not work reliably (searching on the first 'source' field is reliable, however), so the best practice is to avoid using or reassigning either of these default fields and just use a new, unique field name such as 'datasource' to allow finding / isolating these specific events.
 
 ```
 [Top 20 NGE Exception Messages]
