@@ -1,6 +1,8 @@
 # Creating and Using Summary Indexes
 
-A summary index is a special index that stores the results of a scheduled report, when you enable summary indexing for the report. Summary indexing lets you run fast searches over large data sets by spreading out the cost of a computationally expensive report over time. To achieve this, the search that populates the summary index runs on a frequent, recurring basis and extracts the specific data that you require. You can then run fast and efficient searches against this small subset of data in the summary index.
+A summary index is an otherwise normal Splunk index that stores the results of a scheduled report, when you enable summary indexing for the report. Summary indexing lets you run fast searches over large data sets by spreading out the cost of a computationally expensive report over time. To achieve this, the search that populates the summary index runs on a frequent, recurring basis and extracts the specific data that you require. You can then run fast and efficient searches against this small subset of data in the summary index.  
+
+Summary indexes are also useful for storing historical time series data for statistical analysis, anomaly detection, and related machine learning efforts.  
 
 [Creating a Summary Index](#create_index)  
 [Creating a Scheduled Search Report](#create_report)  
@@ -125,7 +127,7 @@ search = eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_mes
 
 ### Using a Summary Index <a name="using_summary_index"></a>
 
-You search a summary index like you would any other Splunk index; you can leverage the 'datasource' field in this example to further isolate the desired events 
+You search a summary index like you would any other Splunk index; you can leverage the 'datasource' field in this example to further isolate the desired events. 
 ```
 index=summary_nge_exception_messages datasource=top_20_nge_exception_messages | timechart span=1h limit=21 sum(count) by nge_exception_message
 ```
