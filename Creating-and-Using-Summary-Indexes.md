@@ -8,6 +8,7 @@ Summary indexes are also useful for storing historical time series data for stat
 2. [Creating a Scheduled Search Report](#create_report)  
 3. [Using a Summary Index](#using_summary_index)  
 4. [Additional Notes](#notes)
+	* [Populating a Summary Index](#populating)
 	* [Using the Delete command](#delete)
 	* [Troubleshooting](#troubleshooting)
 	
@@ -146,6 +147,17 @@ index=summary_nge_exception_messages datasource=top_20_nge_exception_messages | 
 [Top](#top)
 
 ### Additional Notes <a name="notes"></a>
+
+#### Populating a Summary Index <a name="populating></a>
+
+After creating a scheduled search report, you will continue to add events to your summary index at the configured incremental times. You can also populate the summary index with previous / older data using a derivative of the following search string:
+
+```
+
+```
+This avoids having to wait for some time period to have time series data available for creating time series / statistical analysis reports.  
+
+[Top](#top)
 
 #### Using the Delete command <a name="delete"></a>
 
