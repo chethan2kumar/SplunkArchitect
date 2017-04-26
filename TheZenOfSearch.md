@@ -32,8 +32,8 @@ The table below lists all of the search commands in alphabetical order. There is
 
 Some of these commands share functions. For a list of the functions with descriptions and examples, see Evaluation functions and Statistical and charting functions.
 
-| Command | Description | Related commands |
-| :------------------------ | :-------------------------------------------------- | :--------------------- |
+| Command | Description | Related commands | Notes / Examples |
+| :------------------------ | :-------------------------------------------------- | :--------------------- | :---------------------------------------|
 |abstract | Produces a summary of each search result.	 | highlight |
 |accum	| Keeps a running total of the specified numeric field. | autoregress, delta, trendline, streamstats |
 |addcoltotals | Computes an event that contains sum of all numeric fields for previous events. | addtotals, stats |
@@ -73,7 +73,7 @@ Some of these commands share functions. For a list of the functions with descrip
 | eventstats | Adds summary statistics to all search results. | stats | 
 | extract (kv) | Extracts field-value pairs from search results. | kvform, multikv, xmlkv, rex | 
 | fieldformat | Expresses how to render a field at output time without changing the underlying value. | eval, where | 
-| fields | Removes fields from search results. |  | 
+| fields | Removes fields from search results. |  |
 | fieldsummary | Generates summary information for all or a subset of the fields. | analyzefields, anomalies, anomalousvalue, stats | 
 | filldown | Replaces NULL values with the last non-NULL value. | fillnull | 
 | fillnull | Replaces null values with a specified value. |  | 
@@ -83,7 +83,7 @@ Some of these commands share functions. For a list of the functions with descrip
 | format | Takes the results of a subsearch and formats them into a single result. |  | 
 | from | Retrieves data from a dataset, such as a data model dataset, a CSV lookup, a KV Store lookup, a saved search, or a table dataset. |  | 
 | gauge | Transforms results into a format suitable for display by the Gauge chart types. |  | 
-| gentimes | Generates time-range results. |  | 
+| gentimes | Generates time-range results. | map | The gentimes command is a generating command and should be the first command in the search. Generating commands use a leading pipe character. Feed it a start datetime (MM/DD/YYYY[:HH:MM:SS])and optional end datetime and/or  increment. Example: All hourly time ranges from December 1 to December 5 in 2016: ```gentimes start=12/1/16 end=12/5/16 increment=1h``` |
 | geom | Adds a field, named "geom", to each event. This field contains geographic data structures for polygon geometry in JSON and is used for the choropleth map visualization. | geomfilter | 
 | geomfilter | Accepts two points that specify a bounding box for clipping a choropleth map. Points that fall outside of the bounding box are filtered out. | geom | 
 | geostats | Generate statistics which are clustered into geographical bins to be rendered on a world map. | stats, xyseries | 
@@ -105,7 +105,7 @@ Some of these commands share functions. For a list of the functions with descrip
 | makecontinuous | Makes a field that is supposed to be the x-axis continuous (invoked by chart/timechart)	chart, timechart | 
 | makemv | Change a specified field into a multivalued field during a search. | mvcombine, mvexpand, nomv | 
 | makeresults | Creates a specified number of empty search results. |  | 
-| map | A looping operator, performs a search over each search result. |  | 
+| map | A looping operator, performs a search over each search result. | gentimes | 
 | metadata | Returns a list of source, sourcetypes, or hosts from a specified index or distributed search peer. | dbinspect | 
 | metasearch | Retrieves event metadata from indexes based on terms in the logical expression. | metadata, search | 
 | multikv | Extracts field-values from table-formatted events. |  | 
@@ -175,4 +175,4 @@ Some of these commands share functions. For a list of the functions with descrip
 | xyseries | Converts results into a format suitable for graphing. | 
 
 
-> Written with [StackEdit](https://stackedit.io/).
+> Written with [StackEdit](https://stackedit.io/) by James H. Baxter  
