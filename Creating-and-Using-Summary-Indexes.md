@@ -2,7 +2,11 @@
 
 A summary index is a special index that stores the results of a scheduled report, when you enable summary indexing for the report. Summary indexing lets you run fast searches over large data sets by spreading out the cost of a computationally expensive report over time. To achieve this, the search that populates the summary index runs on a frequent, recurring basis and extracts the specific data that you require. You can then run fast and efficient searches against this small subset of data in the summary index.
 
-## Creating a Summary Index  
+[Creating a Summary Index](#create_index)
+[Creating a Scheduled Search Report](#create_report)
+[Using a Summary Index](#using_summary_index)
+
+## Creating a Summary Index  <a name="create_index"></a>
 
 A summary index is created just like any other Splunk index, but may contain or exclude specific settings to set an adequate size and retention period for the data to be stored.  
 
@@ -24,7 +28,7 @@ repFactor = auto
 
 After configuring the index, apply the cluster bundle or restart Splunk as needed so that the new summary index will appear as a selection during scheduled report creation.
 
-## Creating a Scheduled Search Report  
+## Creating a Scheduled Search Report  <a name="create_report"></a>
 
 You can create a Saved Search from a report that runs periodically to populate the summary index with time series data for later use. 
 
@@ -119,6 +123,14 @@ search = eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_mes
 | fields start end count percent nge_exception_message\
 ```
 
+### Using a Summary Index <a name="using_summary_index"></a>
+
+You search a summary index like you would any other Splunk index; you can leverage the 'datasource' field in this example to further isolate the desired events 
+```
+index=summary_nge_exception_messages datasource=top_20_nge_exception_messages | timechart span=1h limit=21 sum(count) by nge_exception_message
+```
+
+![Summary Index Search Example](/images/summary_index_search_example.png) 
 
 
 > Written with [StackEdit](https://stackedit.io/).
