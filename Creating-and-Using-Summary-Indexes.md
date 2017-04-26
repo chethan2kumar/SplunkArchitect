@@ -7,6 +7,10 @@ Summary indexes are also useful for storing historical time series data for stat
 [Creating a Summary Index](#create_index)  
 [Creating a Scheduled Search Report](#create_report)  
 [Using a Summary Index](#using_summary_index)  
+[Additional Notes](#notes)
+	* [Using the Delete command](#delete)
+	* [Troubleshooting](#troubleshooting)
+	
 
 ## Creating a Summary Index  <a name="create_index"></a>
 
@@ -95,7 +99,7 @@ Saving the scheduled report with summary indexing creates the following entries 
 
 Be aware that by default Splunk assigns the __source__ field to the name of the generating report - "Top 20 NGE Exception Messages" in this case - and the __sourcetype__ field to 'stash', which  is how splunk knows that data is already in splunk and the summary data will not be charged against the license.  
 
-I have found that if you add an additional field called 'source' and give it a value, each event will contain two 'source' fields - one will have 'Top 20 NGE Exception Messages', for example, and the other will have the assigned value - such as 'top_20_nge_exception_messages" - but performing a search based on the 2nd 'source' field does not work reliably (searching on the first 'source' field is reliable, however), so the best practice is to avoid using or reassigning either of these default fields and just use a new, unique field name such as 'datasource' to allow finding / isolating these specific events.
+I have found that if you add an additional field called 'source' and give it a value, each event will contain two 'source' fields - one will have 'Top 20 NGE Exception Messages', for example, and the other will have the value assigned in the report generator - such as 'top_20_nge_exception_messages' - but performing a search based on the 2nd 'source' field does not work reliably (searching on the first 'source' field is reliable, however), so the best practice is to avoid using or reassigning either of these default fields and just use a new, unique field name such as 'datasource' to allow finding / isolating these specific events - or just search on the first source field. The only caveat to this approach is that if you artificially populate the summary index with a stand-alone search string (versus the scheduled search report) you either have to specify the the source field with the same verbiage ("Top 20 NGE Exception Messages") or rely on the other search field (datasource) to achieve reliable search results.
 
 ```
 [Top 20 NGE Exception Messages]
@@ -133,10 +137,48 @@ search = eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_mes
 
 You search a summary index like you would any other Splunk index; you can leverage the 'datasource' field in this example to further isolate the desired events. 
 ```
-index=summary_nge_exception_messages datasource=top_20_nge_exception_messages | timechart span=1h limit=21 sum(count) by nge_exception_message
+index=summary_nge_exception_messages datasource=top_20_nge_exception_messages | timechart span=1h limit=0 sum(count) by nge_exception_message
 ```
 
 ![Summary Index Search Example](/images/summary_index_search_example.png) 
+
+
+### Additional Notes <a name="notes"></a>
+
+#### Using the Delete command <a name="delete"></a>
+
+You can delete events from a summary index by creating a search that returns the events you want to delete, and then piping the results to the delete command. Be aware that the user ID you use to perform this operation will have to have the 'can delete' role assigned.  ___BE CAREFUL WITH THIS COMMAND!!!___  The delete function is permanent, and obviously, if misused you could erase more data than you wanted or even production indexes. You should be aware that the delete command can be used to delete an entire index, or all indexes if none is specified. A mistake here could be hazardous to your career.  
+
+The example below illustrates how to delete events from a summary index:
+
+1. Create a search specifying the desired summary index and a time range or other search filters
+
+2. Run the search __without piping to the delete command__ to ensure that you're retrieving __*only*__ the events you want to delete: ```index=summary_nge_exception_messages earliest=-3d@d latest=-1d@d```
+
+3. Add the | delete command to the end of the search string and run it again - for example:  ```index=summary_nge_exception_messages earliest=-3d@d latest=-1d@d | delete```
+
+4. You should see something like:
+```
+
+```
+
+#### Troubleshooting 
+
+You can verify that the scheduled report is running and validate the run parameters by searching the scheduler.log. Set the time range to include the last report run time and search for the report name:
+
+```index=_internal source=*scheduler.log "Top 20 NGE Exception Messages" ```
+
+You should see a savedsearch_name field with the name of your report, and a status=success field/value. An example of a status=success event is:  
+```
+04-26-2017 14:05:22.908 -0400 INFO  SavedSplunker - savedsearch_id="nobody;wdpr_bog_dashboard;Top 20 NGE Exception Messages", search_type="", user="baxtj018", app="wdpr_bog_dashboard", savedsearch_name="Top 20 NGE Exception Messages", priority=default, status=success, digest_mode=1, scheduled_time=1493229900, window_time=0, dispatch_time=1493229919, run_time=2.396, result_count=21, alert_actions="summary_index", sid="scheduler__baxtj018_d2Rwcl9ib2dfZGFzaGJvYXJk__RMD597c4f0496c342429_at_1493229900_53578_7965ABA8-8E64-445B-81A9-5573529732C7", suppressed=0, thread_id="AlertNotifierWorker-0"
+host =	fldcvpsla9935 index =	_internal source =	/opt/splunk/var/log/splunk/scheduler.log sourcetype =	scheduler splunk_server =	fldcppsla2204
+```
+
+You may see previous events for the same report run where status=continued, status=delegated_remote, and status=delegated_remote_completion.
+
+This search may help if you're sure the other report settings are correct and you just want to see if the search report ran successfully:
+
+```index=_internal source=*scheduler.log "Top 20 NGE Exception Messages" | stats count by status```
 
 
 > Written with [StackEdit](https://stackedit.io/) by James H. Baxter.
