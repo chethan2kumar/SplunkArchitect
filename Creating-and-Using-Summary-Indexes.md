@@ -1,16 +1,37 @@
 # Creating and Using Summary Indexes
 
+A summary index is a special index that stores the results of a scheduled report, when you enable summary indexing for the report. Summary indexing lets you run fast searches over large data sets by spreading out the cost of a computationally expensive report over time. To achieve this, the search that populates the summary index runs on a frequent, recurring basis and extracts the specific data that you require. You can then run fast and efficient searches against this small subset of data in the summary index.
 
-## Saved Search to Populate a Summary Index
+## Creating a Summary Index  
 
-You can create a Saved Search that runs periodically to populate the summary index with data for later retreival:
+A summary index is created just like any other Splunk index, but may contain or exclude specific settings to set an adequate size and retention period for the data to be stored.  
 
-(Search Head)  
+An example of the entries in an indexes.conf for a summary index is:
+
+```
+[summary_nge_exception_messages]
+homePath = volume:primary/summary_nge_exception_messages/db
+coldPath = volume:primary/summary_nge_exception_messages/colddb
+thawedPath = $SPLUNK_DB/summary_nge_exception_messages/thaweddb
+repFactor = auto
+# DO NOT set a maxTotalDataSizeMB
+# By default, max hot/warm bucket size is 1TB
+# Index entries are fairly small for this summary
+# DO NOT set a frozenTimePeriodInSecs
+# This data should be retained for 6 years
+# as a historical record
+```
+
+## Creating a Scheduled Saved Search  
+
+You can create a Saved Search that runs periodically to populate the summary index with time series data for later use. 
+
+On a Search Head:  
 Settings > Searches, reports, and alerts  
 Select the App context to create the saved search in, if applicable  
 New  
 
-Complete the fields per the following image and field data examples for a report named 'Top 20 NGE Exception Messages':  
+Complete the fields per the field data examples in the following images to create a report named 'Top 20 NGE Exception Messages':  
 
 ![Saved Search Report Setup 1](/images/saved_search_settings_1.png)  
 
@@ -37,13 +58,16 @@ eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_message=* | 
 
 __Notes on Search String Attributes__
 
-* The 'rex' entries remove and replace identifiers that may be unique with generic 'xxxx' or '-data-' values so that the exception messages are reduced to just their 'types'.
+The 'eventtype' in this example included an index and multiple host specifiers.  
 
-* addinfo adds time info fields to each event including:  
+* The 'rex' entries remove values within the exception messages that may be unique and replace them with generic 'xxxx' or '-data-' values so that the exception messages are reduced to just their 'types' so that accurate statistical analysis is possible.
 
-	* info_min_time  
-	* info_max_time  
-	* info_search_time  
+* addinfo adds epoch time info fields to each event, including:  
+
+	* info_min_time - the earliest time boundary for the search 
+	* info_max_time  - the latest time boundary for the search
+	* info_sid - the ID of the search that generated the event
+	* info_search_time - the time the search was run
 
 * The __eval _time = info_max_time__ creates a timestamp for the event from the info_max_time epoch value that reflects the *end* of the time range. The _time timestamp would otherwise reflect the time of the *start* of the time range, which can be misleading and doesn't lend itself well to time series analysis.  
 
