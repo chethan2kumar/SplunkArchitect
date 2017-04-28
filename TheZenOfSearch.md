@@ -3,7 +3,8 @@
 
 [gentimes](#gentimes)  
 [map](#map)  
-[Search Command Quick Reference Table - Alphabetical](#quickref_alpha)  
+[Search Command Quick Reference Table - Alphabetical](#quickref)  
+[Splunk Commands by Category](#commands)  
 
 
 #### __gentimes__ <a name="gentimes"></a>
@@ -26,7 +27,7 @@ Map is like a foreach iterator. It will take each "result" of a previous search,
 
 
 
-## __Search command quick reference table__ <a name="quickref_alpha"></a>
+## __Search command quick reference table__ <a name="quickref"></a>
 
 The table below lists all of the search commands in alphabetical order. There is a short description of the command and links to related commands. For the complete syntax, usage, and detailed examples, click the command name to display the specific topic for that command.
 
