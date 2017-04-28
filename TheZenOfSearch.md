@@ -3,7 +3,7 @@
 
 [gentimes](#gentimes)  
 [map](#map)  
-[Search Command Quick Reference Table - Alphabetical](#quickref)  
+[Search Command Quick Reference Table](#quickref)  
 [Splunk Commands by Category](#commands)  
 
 
