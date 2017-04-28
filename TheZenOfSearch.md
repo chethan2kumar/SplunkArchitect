@@ -362,6 +362,7 @@ Use these commands to append one set of results with another set or to itself.
 
 #### Filtering
 Use these commands to remove more events or fields from your current results.
+
 | Command | Description |
 | :------------------------ | :------------------------------------------------------------------------- |
 | dedup | Removes subsequent results that match a specified criteria. | 
