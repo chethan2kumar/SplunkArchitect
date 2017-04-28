@@ -180,7 +180,8 @@ Some of these commands share functions. For a list of the functions with descrip
 The following tables list all the search commands, categorized by their usage. Some commands fit into more than one category based on the options that you specify.
 
 ### Correlation
-These commands can be used to build correlation searches.
+These commands can be used to build correlation searches.  
+
 | Command | Description | 
 | :------------------------ | :------------------------------------------------------------------------- |
 | append | Appends subsearch results to current results. | 
@@ -202,9 +203,9 @@ These commands can be used to build correlation searches.
 These commands can be used to learn more about your data, add and delete data sources, or manage the data in your summary indexes.
 
 #### View data
-These commands return information about the data you have in your indexes. They do not modify your data or indexes in any way.
+These commands return information about the data you have in your indexes. They do not modify your data or indexes in any way.  
 
-| Command | Description |  | 
+| Command | Description |
 | :------------------------ | :------------------------------------------------------------------------- |
 | audit | Returns audit trail information that is stored in the local audit index. | 
 | datamodel | Return information about a data model or data model object. | 
@@ -216,7 +217,7 @@ These commands return information about the data you have in your indexes. They 
 #### Manage data
 These are some commands you can use to add data sources to or delete specific data from your indexes. | 
 
-| Command | Description |  | 
+| Command | Description |
 | :------------------------ | :------------------------------------------------------------------------- |
 | crawl | Crawls the filesystem for new sources to add to an index. | 
 | delete | Delete specific events or search results. | 
@@ -224,7 +225,7 @@ These are some commands you can use to add data sources to or delete specific da
 #### Manage summary indexes
 These commands are used to create and manage your summary indexes. | 
 
-| Command | Description |  | 
+| Command | Description |
 | :------------------------ | :------------------------------------------------------------------------- |
 | collect, stash | Puts search results into a summary index. | 
 | overlap | Finds events in a summary index that overlap in time or have missed events. | 
@@ -240,7 +241,7 @@ These are commands you can use to add, extract, and modify fields or field value
 #### Add fields
 Use these commands to add new fields.
 
-| Command | Description |  | 
+| Command | Description |
 | :------------------------ | :------------------------------------------------------------------------- |
 | accum | Keeps a running total of the specified numeric field. | 
 | addinfo | Add fields that contain common information about the current search. | 
@@ -283,7 +284,7 @@ Use these commands to modify fields or their values.
 ### Find anomalies
 These commands are used to find anomalies in your data. Either search for uncommon or outlying events and fields or cluster similar events together.
 
-| Command | Description |  | 
+| Command | Description |
 | :------------------------ | :------------------------------------------------------------------------- |
 | analyzefields, af | Analyze numerical fields for their ability to predict another discrete field. | 
 | anomalies | Computes an "unexpectedness" score for an event. | 
@@ -297,7 +298,7 @@ These commands are used to find anomalies in your data. Either search for uncomm
 ### Geographic and location
 These commands add geographical information to your search results.
 
-| Command | Description |  | 
+| Command | Description |
 | :------------------------ | :------------------------------------------------------------------------- |
 | iplocation | Returns location information, such as city, country, latitude, longitude, and so on, based on IP addresses. | 
 | geom | Adds a field, named "geom", to each event. This field contains geographic data structures for polygon geometry in JSON and is used for choropleth map visualization. This command requires an external lookup with external_type=geo to be installed. | 
@@ -345,14 +346,14 @@ These commands can be used to manage search results. For example, you can append
 #### Alerting
 Use this command to email the results of a search. 
 
-| Command | Description |  | 
+| Command | Description |
 | :------------------------ | :------------------------------------------------------------------------- |
 | sendemail | Emails search results, either inline or as an attachment, to one or more specified email addresses.
 
 #### Appending
 Use these commands to append one set of results with another set or to itself.
 
-| Command | Description |  | 
+| Command | Description |
 | :------------------------ | :------------------------------------------------------------------------- |
 | append | Appends subsearch results to current results. | 
 | appendcols | Appends the fields of the subsearch results to current results, first results to first result, second to second, and so on. | 
