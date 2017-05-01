@@ -68,20 +68,23 @@ Use asterisks and partical result strings to search for a specific source type -
 
 ``` index=<TheRightIndex> source=*-i-* | stats count by source```
 
-Be aware that when you initially create the input, using the 'TRIM_HORIZON' option in the Templates tab, it will take some time for all the older events to be ingested before the more recent events will appear in a search. Select a timerange of 'All time' to see the older events immediately after creating the input.
+Be aware that when you initially create the input using the 'TRIM_HORIZON' option in the Templates tab, it will take some time for all the older events to be ingested before the more recent events will appear in a search. Select a timerange of 'All time' to see the older events immediately after creating the input.
 
 [Top](#top)
 
 ## Troubleshooting Inputs <a name="trouble"></a>
 
-Most initial problems with a new input will have to do with one of the following:
+Most initial problems with a new input will be caused by one of the following:
 
 * Improper index name
 * Improper kinesis stream configuration
 * The application isn't running, and therefore no logs are being created to be ingested  
 
-To assist in troubleshooting more difficult input issues, you should be forwarding Splunk internal logs on the Heavy Forwarder to the indexers so that they can be searched:  
+To assist in troubleshooting more difficult input issues, you should be forwarding Splunk internal logs on the Heavy Forwarder to the indexers so that they can be searched:   
+
 [Install-and-Configure-Splunk-Enterprise-Components#fwd_internal_data](./Install-and-Configure-Splunk-Enterprise-Components.md#fwd_internal_data)
+
+Logs forwarded from the Heavy Forwarder(s) should appear in the _internal and other applicable Splunk logs on the indexer/cluster. You will need to utilize source and/or sourcetype filtering to isolate the events of interest from other Splunk logging events:  
 
 __Searching for kinesis input events:__
 index=_internal sourcetype=aws:cloudwatchlogs:log 
@@ -93,8 +96,6 @@ Note that you will see several events reflecting your search for 'Throttling'
 
 For a complete discussion on troubleshooting the Splunk Add-on for AWS see the Splunk docs:    
 <a href="http://docs.splunk.com/Documentation/AddOns/released/AWS/Troubleshooting" target="_blank">Troubleshoot the Splunk Add-on for AWS</a>
-
-
 
 [Top](#top)
 
