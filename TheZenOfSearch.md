@@ -1,11 +1,11 @@
 
-# The Zen of Search  <a name="top"><a/>
+# __The Zen of Search__  <a name="top"><a/>
 
 [gentimes](#gentimes)  
 [map](#map)  
 [Search Command Quick Reference Table](#quickref)  
 [Splunk Commands by Category](#category)  
-
+[Search Examples](#examples)  
 
 #### __gentimes__ <a name="gentimes"></a>
 Generates timestamp results starting with the exact time specified as start time. Each result describes an adjacent, non-overlapping time range as indicated by the increment value. This terminates when enough results are generated to pass the endtime value.
@@ -175,7 +175,7 @@ Some of these commands share functions. For a list of the functions with descrip
 | xpath | Redefines the XML path. |  | 
 | xyseries | Converts results into a format suitable for graphing. | 
 
-## Splunk Commands by Category <a name="category"></a>
+## __Splunk Commands by Category__ <a name="category"></a>
 
 The following tables list all the search commands, categorized by their usage. Some commands fit into more than one category based on the options that you specify.
 
@@ -468,6 +468,22 @@ Use these commands to search based on time ranges or add time information to you
 | gentimes | Returns results that match a time-range. | 
 | localize | Returns a list of the time ranges in which the search results were found. | 
 | reltime | Converts the difference between 'now' and '_time' to a human-readable value and adds adds this value to the field, 'reltime', in your search results. |
+
+## __Search Examples__ <a name="examples"></a>  
+
+#### __30 Day Splunk License Usage Report__
+
+Run on the License Master  
+```
+index=_internal source=*license_usage.log* type=Usage earliest=-1month@month latest=-0month@month
+| eval idxGB=round(b/(1024*1024*1024), 3), idxMB=round(b/(1024*1024),3) 
+| stats sum(idxGB) as IndexedGB, sum(idxMB) as IndexedMB by pool, idx 
+| rename idx as Index
+| sort pool - IndexedGB
+```
+
+
+
 
 
 > Written with [StackEdit](https://stackedit.io/) by James H. Baxter  
