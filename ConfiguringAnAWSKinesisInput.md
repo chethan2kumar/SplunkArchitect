@@ -3,8 +3,8 @@
 __This document provides instructions for configuring and testing new AWS Kinesis inputs for ingesting CloudWatch-based application and server logs via inputs on the Splunk Add-on for AWS application.__  
 
 [Configuring Inputs](#configuring)  
-[Testing Inputs](#testing)
-[Troubleshooting Inputs](#trouble)
+[Testing Inputs](#testing)  
+[Troubleshooting Inputs](#trouble)  
 
 ## Configuring Inputs
 __This document provides instructions for configuring and testing new AWS Kinesis inputs for ingesting CloudWatch-based application and server logs via inputs on the Splunk Add-on for AWS application.__
