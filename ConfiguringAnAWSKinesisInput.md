@@ -2,7 +2,7 @@
 
 On the applicable Heavy Forwarder, select 'Splunk Add-on for AWS' from the Apps drop-down.  
 
-![Splunk Add-on for AWS](/images/SplunkAdd-OnForAWS.png)  
+![Splunk Add-on for AWS](/images/Kinesis5.png)  
 
 You will see a list of any existing inputs.
 
