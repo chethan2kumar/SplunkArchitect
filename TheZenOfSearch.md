@@ -4,7 +4,7 @@
 [gentimes](#gentimes)  
 [map](#map)  
 [Search Command Quick Reference Table](#quickref)  
-[Splunk Commands by Category](#commands)  
+[Splunk Commands by Category](#category)  
 
 
 #### __gentimes__ <a name="gentimes"></a>
@@ -175,16 +175,19 @@ Some of these commands share functions. For a list of the functions with descrip
 | xpath | Redefines the XML path. |  | 
 | xyseries | Converts results into a format suitable for graphing. | 
 
-## Splunk Commands by Category <a name="commands"></a>
+## Splunk Commands by Category <a name="category"></a>
 
 The following tables list all the search commands, categorized by their usage. Some commands fit into more than one category based on the options that you specify.
+
+The Splunk Documentation page has links for each command:
+<a href="http://docs.splunk.com/Documentation/Splunk/6.5.3/SearchReference/Commandsbycategory" target="_blank">Splunk Search Reference - Commands by Category</a>
 
 ### Correlation
 These commands can be used to build correlation searches.  
 
 | Command | Description | 
 | :------------------------ | :------------------------------------------------------------------------- |
-| append | Appends subsearch results to current results. | 
+| <a href="http://docs.splunk.com/Documentation/Splunk/6.5.3/SearchReference/Append" target="_blank">append</a> | Appends subsearch results to current results. | 
 | appendcols | Appends the fields of the subsearch results to current results, first results to first result, second to second, etc. | 
 | appendpipe | Appends the result of the subpipeline applied to the current result set to results. | 
 | arules | Finds association rules between field values. | 
