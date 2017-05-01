@@ -6,10 +6,9 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 [Testing Inputs](#testing)  
 [Troubleshooting Inputs](#trouble)  
 
-## Configuring Inputs
-__This document provides instructions for configuring and testing new AWS Kinesis inputs for ingesting CloudWatch-based application and server logs via inputs on the Splunk Add-on for AWS application.__
+## Configuring Inputs <a name="configuring"></a>
 
-1. Ensure the index the new kinesis stream data is going to go to has been configured.
+1. On the applicable indexer / index cluster, ensure the __index__ the new input data is going to go to has been configured.
 
 2. On the applicable Heavy Forwarder, select 'Splunk Add-on for AWS' from the Apps drop-down.  You will see a list of any existing inputs:  
 
