@@ -1,31 +1,12 @@
 
 # __The Zen of Search__  <a name="top"><a/>
 
-[gentimes](#gentimes)  
-[map](#map)  
-[Search Command Quick Reference Table](#quickref)  
-[Splunk Commands by Category](#category)  
-[Search Examples](#examples)  
-
-#### __gentimes__ <a name="gentimes"></a>
-Generates timestamp results starting with the exact time specified as start time. Each result describes an adjacent, non-overlapping time range as indicated by the increment value. This terminates when enough results are generated to pass the endtime value.
-
-All hourly time ranges from December 1 to December 5 in 2014
-```| gentimes start=12/1/14 end=12/5/14 increment=1h```  
-
-All daily time ranges from 30 days ago until 27 days ago.
-```| gentimes start=-30 end=-27```
-
-* gentimes is useful in conjunction with the map command.   
-* It does not work for future dates.  
-
-[Top](#top)
-
-#### __map__ <a name="map"></a>
-
-Map is like a foreach iterator. It will take each "result" of a previous search, and perform the map search that many times with the specified map search. 
-
-
+1. [Search Command Quick Reference Table](#quickref)  
+2. [Splunk Commands by Category](#category)  
+3. [Search Examples](#examples)  
+	* [gentimes](#gentimes)  
+	* [map](#map)  
+	* [30 Day Splunk License Usage Report](#30DayLicenseUsageReport)
 
 ## __Search command quick reference table__ <a name="quickref"></a>
 
@@ -471,7 +452,7 @@ Use these commands to search based on time ranges or add time information to you
 
 ## __Search Examples__ <a name="examples"></a>  
 
-#### __30 Day Splunk License Usage Report__
+#### __30 Day Splunk License Usage Report__ <a name="30DayLicenseUsageReport"></a>
 
 Run on the License Master  
 ```
@@ -481,9 +462,26 @@ index=_internal source=*license_usage.log* type=Usage earliest=-1month@month lat
 | rename idx as Index
 | sort pool - IndexedGB
 ```
+[Top](#top)
 
+#### __gentimes__ <a name="gentimes"></a>
+Generates timestamp results starting with the exact time specified as start time. Each result describes an adjacent, non-overlapping time range as indicated by the increment value. This terminates when enough results are generated to pass the endtime value.
 
+All hourly time ranges from December 1 to December 5 in 2014
+```| gentimes start=12/1/14 end=12/5/14 increment=1h```  
 
+All daily time ranges from 30 days ago until 27 days ago.
+```| gentimes start=-30 end=-27```
 
+* gentimes is useful in conjunction with the map command.   
+* It does not work for future dates.  
+
+[Top](#top)
+
+#### __map__ <a name="map"></a>
+
+Map is like a foreach iterator. It will take each "result" of a previous search, and perform the map search that many times with the specified map search. 
+
+[Top](#top)
 
 > Written with [StackEdit](https://stackedit.io/) by James H. Baxter  
