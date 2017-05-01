@@ -1,21 +1,25 @@
-# Configuring an AWS Kinesis Input <a name="top"></a>
+# __Configuring an AWS Kinesis Input__ <a name="top"></a>
 
-[Configuring Inputs](#configuring)
+__This document provides instructions for configuring and testing new AWS Kinesis inputs for ingesting CloudWatch-based application and server logs via inputs on the Splunk Add-on for AWS application.__  
+
+[Configuring Inputs](#configuring)  
 [Testing Inputs](#testing)
-
+[Troubleshooting Inputs](#trouble)
 
 ## Configuring Inputs
 __This document provides instructions for configuring and testing new AWS Kinesis inputs for ingesting CloudWatch-based application and server logs via inputs on the Splunk Add-on for AWS application.__
 
-1. On the applicable Heavy Forwarder, select 'Splunk Add-on for AWS' from the Apps drop-down.  You will see a list of any existing inputs:  
+1. Ensure the index the new kinesis stream data is going to go to has been configured.
+
+2. On the applicable Heavy Forwarder, select 'Splunk Add-on for AWS' from the Apps drop-down.  You will see a list of any existing inputs:  
 
 ![Splunk Add-on for AWS](/images/Kinesis1.png)  
 
-2. Click 'Create New Input', and select 'Kinesis' from the drop-down list:  
+3. Click 'Create New Input', and select 'Kinesis' from the drop-down list:  
 
 ![New Kinesis Input](/images/SplunkAdd-OnForAWSNewInput.png)  
 
-3. In the 'Regions' tab of the 'Add AWS Kinesis Input' form, enter or select the following information:  
+4. In the 'Regions' tab of the 'Add AWS Kinesis Input' form, enter or select the following information:  
 
 	* Name - enter the name to be associated with the input, using the following convention:
 	
@@ -29,33 +33,68 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 	* AWS Account - select the appropriate AWS role
 	* Assume Role - do not configure
 	* AWS Region - select the appropriate region    
-	__Note:__ US East (Virginia) = us-east-1; US West (Oregon) = us-west-2
+	__Note:__ US East (N. Virginia) = us-east-1; US West (Oregon) = us-west-2
 	
 ![Regions Tab](/images/Kinesis2.png)  
 
 
-4. In the Templates tab enter or select the following:
+5. In the Templates tab enter or select the following:
 
 * Stream Name - select the appropriate stream name (provided by the Cloud SE) for this input
-* Initial Stream Position - select 'TRIM_HORIZON' 
+* Initial Stream Position - select 'TRIM_HORIZON' (including older records) vs 'LATEST' (recent records only)
 * Encoding - leave at 'none'
 * Record Format - select 'CloudWatchLogs'
 
 ![Templates Tab](/images/Kinesis3.png)
 
-5. In the Settings tab enter or select the following:
+6. In the Settings tab enter or select the following:
 
 	* Source Type: select 'aws:cloudwatchlogs:vpcflow' from the drop-down list
 	* Index: manually enter the index the data is to be sent to  
 
 ![Settings Tab](/images/Kinesis4.png)
 
-6. Click 'Create' - you will be returned to the initial application page view, and the new input should be listed. 
+7. Click 'Create' - you will be returned to the initial application page view, and the new input should be listed. 
 	* The new input will be immediately enabled and start ingesting data.
 
 [Top](#top)
 
 ## Testing Inputs <a name="testing"></a>
+
+You can test for proper input operation by simply searching for events in the index you directed the input to:
+
+```index=<TheRightIndex> | stats count by source```
+
+Use asterisks and partical result strings to search for a specific source type - in this case, AWS instance server logs:  
+
+``` index=<TheRightIndex> source=*-i-* | stats count by source```
+
+Be aware that when you initially create the input, using the 'TRIM_HORIZON' option in the Templates tab, it will take some time for all the older events to be ingested before the more recent events will appear in a search. Select a timerange of 'All time' to see the older events immediately after creating the input.
+
+[Top](#top)
+
+## Troubleshooting Inputs <a name="trouble"></a>
+
+Most initial problems with a new input will have to do with one of the following:
+
+* Improper index name
+* Improper kinesis stream configuration
+* The application isn't running, and therefore no logs are being created to be ingested  
+
+To assist in troubleshooting more difficult input issues, you should be forwarding Splunk internal logs on the Heavy Forwarder to the indexers so that they can be searched:  
+[Install-and-Configure-Splunk-Enterprise-Components#fwd_internal_data](./Install-and-Configure-Splunk-Enterprise-Components.md#fwd_internal_data)
+
+__Searching for kinesis input events:__
+index=_internal sourcetype=aws:cloudwatchlogs:log 
+
+__Searching for throttling events:__
+index=_internal Throttling
+
+Note that you will see several events reflecting your search for 'Throttling'
+
+For a complete discussion on troubleshooting the Splunk Add-on for AWS see the Splunk docs:    
+<a href="http://docs.splunk.com/Documentation/AddOns/released/AWS/Troubleshooting" target="_blank">Troubleshoot the Splunk Add-on for AWS</a>
+
 
 
 [Top](#top)
