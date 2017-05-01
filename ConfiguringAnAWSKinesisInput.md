@@ -64,7 +64,7 @@ You can test for proper input operation by simply searching for events in the in
 
 ```index=<TheRightIndex> | stats count by source```
 
-Use asterisks and partical result strings to search for a specific source type - in this case, AWS instance server logs:  
+Use asterisks and partical result strings to search for a specific source - in this case, AWS instance server logs:  
 
 ``` index=<TheRightIndex> source=*-i-* | stats count by source```
 
@@ -77,7 +77,8 @@ Be aware that when you initially create the input using the 'TRIM_HORIZON' optio
 Most initial problems with a new input will be caused by one of the following:
 
 * Improper index name
-* Improper kinesis stream configuration
+* Missing index
+* Improper kinesis stream configuration (get the Cloud SE to verify)
 * The application isn't running, and therefore no logs are being created to be ingested  
 
 To assist in troubleshooting more difficult input issues, you should be forwarding Splunk internal logs on the Heavy Forwarder to the indexers so that they can be searched:   
