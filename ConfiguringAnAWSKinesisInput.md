@@ -22,9 +22,9 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 
 	* Name - enter the name to be associated with the input, using the following convention:
 	
-		* the application short name  
+		* the application short name  (provided by the app team or derived otherwise)
 		* three underscores (____) for spacing / legibility
-		* the Business ID 
+		* the Business ID (BAPP ID)
 		* two colons (::)
 		* the region in 'us-east-1' format
 		* two colons (::)
