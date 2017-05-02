@@ -39,10 +39,10 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 
 5. In the Templates tab enter or select the following:
 
-* Stream Name - select the appropriate stream name (provided by the Cloud SE) for this input
-* Initial Stream Position - select 'TRIM_HORIZON' (including older records) vs 'LATEST' (recent records only)
-* Encoding - leave at 'none'
-* Record Format - select 'CloudWatchLogs'
+	* Stream Name - select the appropriate stream name (provided by the Cloud SE) for this input
+	* Initial Stream Position - select 'TRIM_HORIZON' (including older records) vs 'LATEST' (recent records only)
+	* Encoding - leave at 'none'
+	* Record Format - select 'CloudWatchLogs'
 
 	![Templates Tab](/images/Kinesis3.png)
 
@@ -54,6 +54,7 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 	![Settings Tab](/images/Kinesis4.png)
 
 7. Click 'Create' - you will be returned to the initial application page view, and the new input should be listed. 
+
 	* The new input will be immediately enabled and start ingesting data.
 
 [Top](#top)
