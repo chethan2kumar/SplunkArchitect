@@ -74,6 +74,8 @@ The Git shell is like a ssh environment:
 	
 ```git help <command>``` - display help for specific commands  
 
+```git help git``` - opens an online man page on git  
+
 __First time setup__
 The first time you use the git command shell, run these commands to save these to the environment so you don't have to do it again:  
 ```

@@ -5,7 +5,8 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 [Configuring Inputs](#configuring)  
 [Testing Inputs](#testing)  
 [Troubleshooting Inputs](#trouble)  
-
+[Performance Metrics](#performance)  
+***
 ## Configuring Inputs <a name="configuring"></a>
 
 1. On the applicable indexer / index cluster, ensure the __index__ the new input data is going to go to has been configured.
@@ -57,7 +58,7 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 	* The new input will be immediately enabled and start ingesting data.
 
 [Top](#top)
-
+***
 ## Testing Inputs <a name="testing"></a>
 
 You can test for proper input operation by simply searching for events in the index you directed the input to:
@@ -71,6 +72,7 @@ Use asterisks and partical result strings to search for a specific source - in t
 Be aware that when you initially create the input using the 'TRIM_HORIZON' option in the Templates tab, it will take some time for all the older events to be ingested before the more recent events will appear in a search. Select a timerange of 'All time' to see the older events immediately after creating the input.
 
 [Top](#top)
+***
 
 ## Troubleshooting Inputs <a name="trouble"></a>
 
@@ -99,5 +101,43 @@ For a complete discussion on troubleshooting the Splunk Add-on for AWS see the S
 <a href="http://docs.splunk.com/Documentation/AddOns/released/AWS/Troubleshooting" target="_blank">Troubleshoot the Splunk Add-on for AWS</a>
 
 [Top](#top)
+***
 
-> Written with [StackEdit](https://stackedit.io/).
+## Performance Metrics <a name="performance"></a>
+
+__Throughput__
+
+You can get metrics for how much throughput your Heavy Forwarder and Indexers are handling with this search string:  
+
+```index=_internal sourcetype=splunkd source=*metrics.log group=per_host_thruput | stats avg(kbps) as avg_kbps max(kbps) as max_kbps avg(eps) as avg_eps max(eps) as max_eps avg(kb) as avg_kb max(kb) as max_kb avg(ev) as avg_events max(ev) as max_events by host```
+
+A more granular search that can be run for multiple days:
+
+```index=_internal sourcetype=splunkd source=*metrics.log group=per_host_thruput | bucket span=1m _time | stats max(kbps) as max_kbps max(eps) as max_eps sum(kb) as kb sum(ev) as ev by _time,host | bucket span=1h _time | stats max(max_kbps) as max_kbps max(max_eps) as max_eps max(kb) as max_kbpm max(ev) as max_epm sum(kb) as kb sum(ev) as ev by _time, host | bucket span=1d _time | stats max(max_kbps) as max_kbps max(max_eps) as max_eps  max(max_kbpm) as max_kbpm max(max_epm) as max_epm max(kb) as max_kbph max(ev) as max_eph sum(kb) as kb sum(ev) as ev by _time, host```
+
+__Concurrent Searches__
+
+This search will return the number of concurrent searches per hour for the last 30 days. Concurrent searches has nothing to do with Heavy Forwarder performance but if you're troubleshooting performance issues this may be worth taking a look at as well.  
+
+```index=_internal source=*metrics.log group="search_concurrency" earliest=-1month@month latest=-0month@month | timechart span=1h sum(active_hist_searches) as concurrent_searches```
+
+__Active Users__
+
+```index=_internal source=*metrics.log group="search_concurrency" earliest=-1month@month latest=-0month@month | timechart sum(active_hist_searches) as concurrent_searches by user```
+
+__Saved Searches__
+
+```index="_internal" sourcetype="scheduler" ```
+
+__NOTE:__ For saved searches, there are all sorts of fields to play with, including *savedsearch_name, status, app, run_time*, and more.
+
+__Manual Searches__
+
+```index="_internal" sourcetype="searches"```
+__
+
+See the ```SplunkInternalIndexSourceSourcetypeList.xlsx``` document for a complete list of Splunk internal logs and their various source and sourcetypes which can be investigated for additional insights into Splunk operation and performance.  
+
+[Top](#top)
+***
+> Written with [StackEdit](https://stackedit.io/) by James H. Baxter - last update 5-2-2017.
