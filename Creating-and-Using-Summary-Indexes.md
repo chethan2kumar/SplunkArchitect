@@ -137,7 +137,7 @@ search = eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_mes
 
 ### Using a Summary Index <a name="using_summary_index"></a>
 
-You search a summary index like you would any other Splunk index; you can leverage the 'datasource' field in this example to further isolate the desired events. 
+You search a summary index like you would any other Splunk index; you can leverage the 'datasource' field as is done in this example to further isolate the desired events in case there are additional data sources in the same index:  
 ```
 index=summary_nge_exception_messages datasource=top_20_nge_exception_messages | timechart span=1h limit=0 sum(count) by nge_exception_message
 ```
@@ -151,6 +151,8 @@ index=summary_nge_exception_messages datasource=top_20_nge_exception_messages | 
 #### Populating a Summary Index <a name="populating"></a>
 
 After creating a scheduled search report, you will continue to add events to your summary index at the configured incremental times. You can also populate the summary index with previous / older data using a derivative of the following search string:
+
+__This search takes a lot of time & resources to complete - use judiciously:__
 
 ```
 
@@ -197,4 +199,4 @@ This search may help if you're sure the other report settings are correct and yo
 
 [Top](#top)
 
-> Written with [StackEdit](https://stackedit.io/) by James H. Baxter.
+> Written with [StackEdit](https://stackedit.io/) by James H. Baxter - last update 5/2/2017
