@@ -135,7 +135,7 @@ __Manual Searches__
 
 ```index="_internal" sourcetype="searches"```
 
-Download and view the [SplunkInternalIndexSourceSourcetypeList.xlsx](./SplunkInternalIndexSourceSourcetypeList.xlsx) document for a complete list of Splunk internal logs and their various source and sourcetypes which can be investigated for additional insights into Splunk operation and performance.  
+Download and view the [SplunkInternalIndexSourceSourcetypeList.xlsx](./SplunkInternalIndexSourceSourcetypeList.xlsx) document for a partial list of Splunk internal logs and their various source and sourcetypes which can be investigated for additional insights into Splunk operation and performance.  
 
 [Top](#top)
 ***
