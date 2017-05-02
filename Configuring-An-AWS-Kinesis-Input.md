@@ -32,7 +32,7 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 * AWS Account - select the appropriate AWS role
 * Assume Role - do not configure
 * AWS Region - select the appropriate region    
-	__Note:__ US East (N. Virginia) = us-east-1; US West (Oregon) = us-west-2
+		* __Note:__ US East (N. Virginia) = us-east-1; US West (Oregon) = us-west-2
 
 	![Regions Tab](/images/Kinesis2.png)  
 
