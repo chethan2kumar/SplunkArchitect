@@ -37,7 +37,6 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 	
 	![Regions Tab](/images/Kinesis2.png)  
 
-
 5. In the Templates tab enter or select the following:
 
 * Stream Name - select the appropriate stream name (provided by the Cloud SE) for this input
