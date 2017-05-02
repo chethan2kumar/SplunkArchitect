@@ -56,9 +56,8 @@ Start in:	%HOMEDRIVE%%HOMEPATH%
 
 1. Click the icon to open the Git Bash shell
 	A MINGW64 terminal window will open and display a prompt similar to:  
-	```James@DESKTOP-6N4UAR1 MINGW64 ~/<path to your current directory>
-	$
-	```
+	```James@DESKTOP-6N4UAR1 MINGW64 ~/<path to your current directory>```
+	```$```
 	
 __Common Git Commands__
 The Git shell is like a ssh environment:  
