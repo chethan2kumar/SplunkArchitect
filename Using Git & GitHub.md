@@ -10,6 +10,7 @@ Notes on using Git and GitHub. Just the essentials.
 4. [Using Git with GitHub](#git_w_github)
 	* [Fork an existing repository](#fork)
 	* [Push to the repository](#push)
+5. [Configuring Git Authentication](#authentication)  
 
 ***
 ## GitHub tutorial <a name="tutorial"></a>
@@ -18,22 +19,23 @@ Notes on using Git and GitHub. Just the essentials.
 ***
 ## GitHub online <a name="online"></a>
 
-<a href="https://github.disney.com" target="_blank">https://github.disney.com</a>
-or
-<a href="https://github.com/" target="_blank">https://github.com</a>  (generic)
+<a href="https://github.disney.com" target="_blank">https://github.disney.com</a>  
+or  
+<a href="https://github.com/" target="_blank">https://github.com</a>  (generic)  
 
 Click Sign up  or  Sign in
 Enter your Username or Email & password
 
-From the home page:
+__From the home page:__
 
-Click an existing repository, or
+1. Click an existing repository, or
+Click the green box:    ```+ New repository```  
 
-Click the green box:    ```+ New repository```
-Add the repository name  
-Click and edit the README file
+2. Add the repository name  
 
-Everything else is mostly click-able
+3. Click and edit the README file
+
+Other GitHub features are mostly click-able - navigate and explore as desired.  
 
 [Top](#top)
 ***
@@ -49,33 +51,35 @@ The Git Bash shortcut properties are:
 Target:		"C:\Program Files\Git\git-bash.exe" --cd-to-home
 Start in:	%HOMEDRIVE%%HOMEPATH%
 ```
-[Top](#top)
-***
+
 ### Using the Git shell <a name="git_shell"></a>
 
-Click the icon to open the Git Bash shell
-A MINGW64 terminal window will open and display a prompt similar to:  
-James@DESKTOP-6N4UAR1 MINGW64 ~
-$
-
-Run ```git help git``` to dipslay the help index
-Run ```git help <command>``` to display help for specific commands.
-
+1. Click the icon to open the Git Bash shell
+	A MINGW64 terminal window will open and display a prompt similar to:  
+	```James@DESKTOP-6N4UAR1 MINGW64 ~/<path to your current directory>
+	$
+	```
+	
 __Common Git Commands__
-The Git shell is like a ssh window:  
+The Git shell is like a ssh environment:  
 
 ```pwd```	- shows you the present working directory
-```cd /c/Dropbox/``` - change to C:\Dropbox directory
-```ls -al``` - list all files in the current directory
-```git remote -v``` - show the 'handles' for your remote connections - v = verbose
-
-
+	
+```cd /c/Dropbox/``` - change to C:\Dropbox directory  
+	
+```ls -al``` - list all files in the current directory  
+	
+```git remote -v``` - show the 'handles' for your remote connections - v = verbose  
+	
+```git help git``` - dipslay the help index  
+	
+```git help <command>``` - display help for specific commands  
 
 __First time setup__
 The first time you use the git command shell, run these commands to save these to the environment so you don't have to do it again:  
 ```
-git config --global user.name <username>
-git config --global user.email <email>
+git config --global user.name <your username>
+git config --global user.email <your email>
 ```
 [Top](#top)
 ***
@@ -84,7 +88,7 @@ git config --global user.email <email>
 __Note:__ If this is your first time using Git, you may need to set up authentication:
 [Configuring Git Authentication](#authentication)
 
-#### Fork an existing repository <a name="fork"></a>
+### Fork an existing repository <a name="fork"></a>
 
 This is the process of 'forking' (getting a copy of) an existing repository from GitHub.com to a local PC directory. After you have a local copy on your PC, you can edit/add/delete files and then 'push' them back to the repository on GitHub.  
 
@@ -121,7 +125,7 @@ __Note!__ The git clone command will create a new directory *inside this folder*
 
 9. ```ls -al``` - you should see .git and a README.md and other repository files
 
-#### Push to the repository <a name="push"></a>
+### Push to the repository <a name="push"></a>
 
 After you have edited / added / deleted files in your local PC directory, you can update the files in the GitHub repository.
 
@@ -143,7 +147,7 @@ You may be prompted for your username and password
 [Top](#top)
 ***
 
-##Authenticating to GitHub <a name="authenticate"></a>
+## Configuring Git Authentication <a name="authentication"></a>
 
 You will have to add a ssh key to git hub - follow the instructions on the link below:
 https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/
