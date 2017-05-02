@@ -134,9 +134,8 @@ __NOTE:__ For saved searches, there are all sorts of fields to play with, includ
 __Manual Searches__
 
 ```index="_internal" sourcetype="searches"```
-__
 
-See the ```SplunkInternalIndexSourceSourcetypeList.xlsx``` document for a complete list of Splunk internal logs and their various source and sourcetypes which can be investigated for additional insights into Splunk operation and performance.  
+See the [SplunkInternalIndexSourceSourcetypeList.xlsx](./SplunkInternalIndexSourceSourcetypeList.xlsx) document for a complete list of Splunk internal logs and their various source and sourcetypes which can be investigated for additional insights into Splunk operation and performance.  
 
 [Top](#top)
 ***
