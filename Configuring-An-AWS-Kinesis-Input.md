@@ -13,11 +13,11 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 
 2. On the applicable Heavy Forwarder, select 'Splunk Add-on for AWS' from the Apps drop-down.  You will see a list of any existing inputs:  
 
-![Splunk Add-on for AWS](/images/Kinesis1.png)  
+	![Splunk Add-on for AWS](/images/Kinesis1.png)  
 
 3. Click 'Create New Input', and select 'Kinesis' from the drop-down list:  
 
-![New Kinesis Input](/images/SplunkAdd-OnForAWSNewInput.png)  
+	![New Kinesis Input](/images/SplunkAdd-OnForAWSNewInput.png)  
 
 4. In the 'Regions' tab of the 'Add AWS Kinesis Input' form, enter or select the following information:  
 
@@ -35,7 +35,7 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 	* AWS Region - select the appropriate region    
 	__Note:__ US East (N. Virginia) = us-east-1; US West (Oregon) = us-west-2
 	
-![Regions Tab](/images/Kinesis2.png)  
+	![Regions Tab](/images/Kinesis2.png)  
 
 
 5. In the Templates tab enter or select the following:
@@ -45,14 +45,14 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 * Encoding - leave at 'none'
 * Record Format - select 'CloudWatchLogs'
 
-![Templates Tab](/images/Kinesis3.png)
+	![Templates Tab](/images/Kinesis3.png)
 
 6. In the Settings tab enter or select the following:
 
 	* Source Type: select 'aws:cloudwatchlogs:vpcflow' from the drop-down list
 	* Index: manually enter the index the data is to be sent to  
 
-![Settings Tab](/images/Kinesis4.png)
+	![Settings Tab](/images/Kinesis4.png)
 
 7. Click 'Create' - you will be returned to the initial application page view, and the new input should be listed. 
 	* The new input will be immediately enabled and start ingesting data.
@@ -135,7 +135,7 @@ __Manual Searches__
 
 ```index="_internal" sourcetype="searches"```
 
-Download and view the [SplunkInternalIndexSourceSourcetypeList.xlsx](./SplunkInternalIndexSourceSourcetypeList.xlsx) document for a partial list of Splunk internal logs and their various source and sourcetypes which can be investigated for additional insights into Splunk operation and performance.  
+Download and view the [SplunkInternalIndexSourceSourcetypeList.xlsx](SplunkArchitect/SplunkInternalIndexSourceSourcetypeList.xlsx) document for a partial list of Splunk internal logs and their various source and sourcetypes which can be investigated for additional insights into Splunk operation and performance.  
 
 [Top](#top)
 ***
