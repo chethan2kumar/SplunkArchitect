@@ -22,43 +22,43 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 4. In the 'Regions' tab of the 'Add AWS Kinesis Input' form, enter or select the following information:
 
 * Name - enter the name to be associated with the input, using the following convention:
-		* the application short name  (provided by the app team or derived otherwise)
-		* three underscores (____) for spacing / legibility
-		* the Business ID (BAPP ID)
-		* two colons (::)
-		* the region in 'us-east-1' format
-		* two colons (::)
-* The kinesis stream this input will be using (provided by Cloud SE)
-* AWS Account - select the appropriate AWS role
-* Assume Role - do not configure
-* AWS Region - select the appropriate region    
-		* __Note:__ US East (N. Virginia) = us-east-1; US West (Oregon) = us-west-2
+		* the application short name  (provided by the app team or derived otherwise)  
+		* three underscores (____) for spacing / legibility  
+		* the Business ID (BAPP ID)  
+		* two colons (::)  
+		* the region in 'us-east-1' format  
+		* two colons (::)  
+* The kinesis stream this input will be using (provided by Cloud SE)  
+* AWS Account - select the appropriate AWS role  
+* Assume Role - do not configure  
+* AWS Region - select the appropriate region      
+		* __Note:__ US East (N. Virginia) = us-east-1; US West (Oregon) = us-west-2  
 
 	![Regions Tab](/images/Kinesis2.png)  
 
-5. In the Templates tab enter or select the following:
+5. In the Templates tab enter or select the following:  
 
-	* Stream Name - select the appropriate stream name (provided by the Cloud SE) for this input
-	* Initial Stream Position - select 'TRIM_HORIZON' (including older records) vs 'LATEST' (recent records only)
-	* Encoding - leave at 'none'
-	* Record Format - select 'CloudWatchLogs'
+	* Stream Name - select the appropriate stream name (provided by the Cloud SE) for this input  
+	* Initial Stream Position - select 'TRIM_HORIZON' (including older records) vs 'LATEST' (recent records only)  
+	* Encoding - leave at 'none'  
+	* Record Format - select 'CloudWatchLogs'  
 
 	![Templates Tab](/images/Kinesis3.png)
 
-6. In the Settings tab enter or select the following:
+6. In the Settings tab enter or select the following:  
 
-	* Source Type: select 'aws:cloudwatchlogs:vpcflow' from the drop-down list
+	* Source Type: select 'aws:cloudwatchlogs:vpcflow' from the drop-down list  
 	* Index: manually enter the index the data is to be sent to  
 
 	![Settings Tab](/images/Kinesis4.png)
 
-7. Click 'Create' - you will be returned to the initial application page view, and the new input should be listed. 
+7. Click 'Create' - you will be returned to the initial application page view, and the new input should be listed.  
 
-	* The new input will be immediately enabled and start ingesting data.
+	* The new input will be immediately enabled and start ingesting data.  
 
 __Where inputs are stored__
 
-Inputs configured from the Splunk Add-on for AWS are kept in directory location ```/opt/splunk/etc/apps/Splunk_TA-aws/local``` in the file  ```aws_kinesis_tasks.conf```
+Inputs configured from the Splunk Add-on for AWS are kept in directory location ```/opt/splunk/etc/apps/Splunk_TA-aws/local``` in the file  ```aws_kinesis_tasks.conf```  
 
 Typical contents reflect the values selected during the input configuration; these are from the example input configured above:  
 ```
