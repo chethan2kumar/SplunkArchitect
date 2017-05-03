@@ -21,7 +21,7 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 
 4. In the 'Regions' tab of the 'Add AWS Kinesis Input' form, enter or select the following information:  
 
-* Name - enter the name to be associated with the input, using the following convention:
+	* Name - enter the name to be associated with the input, using the following convention:  
   
 		* the application short name  (provided by the app team or derived otherwise)  
 		* three underscores (____) for spacing / legibility  
@@ -29,11 +29,12 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 		* two colons (::)  
 		* the region in 'us-east-1' format  
 		* two colons (::)  
-* The kinesis stream this input will be using (provided by Cloud SE)  
-* AWS Account - select the appropriate AWS role  
-* Assume Role - do not configure  
-* AWS Region - select the appropriate region      
-		* __Note:__ US East (N. Virginia) = us-east-1; US West (Oregon) = us-west-2  
+
+	* The kinesis stream this input will be using (provided by Cloud SE)  
+	* AWS Account - select the appropriate AWS role  
+	* Assume Role - do not configure  
+	* AWS Region - select the appropriate region. 
+	* __Note:__ US East (N. Virginia) = us-east-1; US West (Oregon) = us-west-2  
 
 	![Regions Tab](/images/Kinesis2.png)  
 
