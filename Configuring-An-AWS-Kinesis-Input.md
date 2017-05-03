@@ -9,7 +9,7 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 ***
 ## Configuring Inputs <a name="configuring"></a>
 
-1. On the applicable indexer / index cluster, ensure the __index__ the new input data is going to go to has been configured.
+1. On the applicable indexer / index cluster, ensure the __index__ the new input data is going to go to has been configured.  
 
 2. On the applicable Heavy Forwarder, select 'Splunk Add-on for AWS' from the Apps drop-down.  You will see a list of any existing inputs:  
 
@@ -19,9 +19,9 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 
 	![New Kinesis Input](/images/SplunkAdd-OnForAWSNewInput.png)  
 
-4. In the 'Regions' tab of the 'Add AWS Kinesis Input' form, enter or select the following information:
+4. In the 'Regions' tab of the 'Add AWS Kinesis Input' form, enter or select the following information:  
 
-* Name - enter the name to be associated with the input, using the following convention:
+* Name - enter the name to be associated with the input, using the following convention:  
 		* the application short name  (provided by the app team or derived otherwise)  
 		* three underscores (____) for spacing / legibility  
 		* the Business ID (BAPP ID)  
@@ -155,4 +155,4 @@ Download and view the [SplunkInternalIndexSourceSourcetypeList.xlsx](SplunkArchi
 
 [Top](#top)
 ***
-> Written with [StackEdit](https://stackedit.io/) by James H. Baxter - last update 5-2-2017.
+> Written with [StackEdit](https://stackedit.io/) by James H. Baxter - last update 5-3-2017.
