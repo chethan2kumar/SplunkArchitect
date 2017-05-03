@@ -56,6 +56,23 @@ __This document provides instructions for configuring and testing new AWS Kinesi
 
 	* The new input will be immediately enabled and start ingesting data.
 
+__Where inputs are stored__
+
+Inputs configured from the Splunk Add-on for AWS are kept in directory location ```/opt/splunk/etc/apps/Splunk_TA-aws/local``` in file  ```aws_kinesis_tasks.conf```
+
+Typical contents reflect the values selected during the input configuration; these are from the example input configured above:  
+```
+[touch-to-train___BAPP0065292::us-east-1::cast-ttt-qa]
+account = splunk-qa-iam_role
+encoding =
+format = CloudWatchLogs
+index = wdpr_touchtotrain
+init_stream_position = TRIM_HORIZON
+region = us-east-1
+sourcetype = aws:cloudwatchlogs:vpcflow
+stream_names = cast-ttt-qa
+```
+
 [Top](#top)
 ***
 ## Testing Inputs <a name="testing"></a>
