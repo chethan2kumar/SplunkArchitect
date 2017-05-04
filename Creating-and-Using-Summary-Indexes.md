@@ -158,7 +158,7 @@ The 'map' command iterates over the piped set of timestamps and performs the giv
 
 The $starttime$ and $endtime$ values are also used to create start and end datetimes for these output fields, as well as to reset the _time value to the 'end' time as an output field as well. These fields, along with the nge_exception_message, count, and percentage fields, are then collected into the summary index.
 
-Finally - note that because 'map's search command is enclosed in quotes, any quotes used with the search string itself must be delimited with a backslash ('\').
+Finally - note that because map's search command is enclosed in quotes, any quotes used with the search string itself must be delimited with a backslash ('\\').
 
 __This search takes a lot of time & resources to complete - use judiciously:__
 
