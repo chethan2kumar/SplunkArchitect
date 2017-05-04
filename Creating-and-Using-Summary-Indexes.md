@@ -73,7 +73,7 @@ eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_message=* | 
 
 __Notes on Search String Attributes__
 
-The 'eventtype' in this example included an index and multiple host specifiers.  
+* The 'eventtype' in this example included an index and multiple host specifiers.  
 
 * The 'rex' entries remove values within the exception messages that may be unique and replace them with generic 'xxxx' or '-data-' values so that the exception messages are reduced to just their 'types' so that accurate statistical analysis is possible.
 
@@ -150,12 +150,38 @@ index=summary_nge_exception_messages datasource=top_20_nge_exception_messages | 
 
 #### Populating a Summary Index <a name="populating"></a>
 
-After creating a scheduled search report, you will continue to add events to your summary index at the configured incremental times. You can also populate the summary index with previous / older data using a derivative of the following search string:
+After creating a scheduled search report, you will continue to add events to your summary index at the configured incremental times. You can also populate the summary index with previous / older data using a derivative of the following search string.  
+
+The 'gentimes' command creates a set of 'starttime' and 'endtime' timestamps for the given timerange and increment.  
+
+The 'map' command iterates over the piped set of timestamps and performs the given search using the $starttime$ and $endtime$ values for each time increment.  
+
+The $starttime$ and $endtime$ values are also used to create start and end datetimes for these output fields, as well as to reset the _time value to the 'end' time as an output field as well. These fields, along with the nge_exception_message, count, and percentage fields, are then collected into the summary index.
+
+Finally - note that because 'map's search command is enclosed in quotes, any quotes used with the search string itself must be delimited with a backslash ('\').
 
 __This search takes a lot of time & resources to complete - use judiciously:__
 
 ```
-
+| gentimes start=04/01/2017:00:00:00 end=04/24/2017:15:00:00 increment=1h@h
+| map maxsearches=720 search="
+  search earliest=$starttime$ latest=$endtime$ eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_message=*
+| rex field=nge_exception_message mode=sed \"s/(#\d+])/#xxxx]/g\"
+| rex field=nge_exception_message mode=sed \"s/(\[.+])/[xxxx]/g\"  
+| rex field=nge_exception_message mode=sed \"s/(Transaction timed out: deadline was .+$)/Transaction timed out: deadline was -date-/g\"
+| rex field=nge_exception_message mode=sed \"s/(guest\/.*\/identifiers)/guest\/xxxx\/identifiers/g\" 
+| rex field=nge_exception_message mode=sed \"s/(ID: .*$)/ID: xxxx/g\" 
+| rex field=nge_exception_message mode=sed \"s/(For input string: ".*")/For input string "xxxx"/g\" 
+| rex field=nge_exception_message mode=sed \"s/(End Date .* is prior to .*$)/End Date -date- is prior to -date-/g\" 
+| rex field=nge_exception_message mode=sed \"s/(party for \d+ entitlement$)/party for xxxx entitlement/g\" 
+| rex field=nge_exception_message mode=sed \"s/(found for \d+ for)/found for xxxx for/g\" 
+| top 20 nge_exception_message useother=t
+| eval start=strftime($starttime$, \"%Y-%m-%d %T\")
+| eval end=strftime(($endtime$ + 1), \"%Y-%m-%d %T\")
+| eval _time=end
+| fields _time start end count percent nge_exception_message
+"
+| collect index=summary_nge_exception_messages marker="datasource=top_20_nge_exception_messages"
 ```
 This avoids having to wait for some time period to have time series data available for creating time series / statistical analysis reports.  
 
@@ -173,11 +199,16 @@ The example below illustrates how to delete events from a summary index:
 
 3. Add the | delete command to the end of the search string and run it again - for example:  ```index=summary_nge_exception_messages earliest=-3d@d latest=-1d@d | delete```
 
-4. You should see something like:
-```
+You should see something like the following for as many indexers as are storing buckets of data for this summary index:  
 
-```
+| splunk_server | index | deleted | errors |
+| :--------------- | :---------------------------------------- | :----- | :--|
+| fldcppsla2200	| ```__ALL__``` | 102 | 0 |
+| fldcppsla2200	| summary_nge_exception_messages | 102 | 0 |
+...  
+
 [Top](#top)
+***
 
 #### Troubleshooting <a name="troubleshooting"></a>
 
