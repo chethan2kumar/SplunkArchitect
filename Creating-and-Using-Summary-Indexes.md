@@ -160,6 +160,8 @@ The $starttime$ and $endtime$ values are also used to create start and end datet
 
 Finally - note that because map's search command is enclosed in quotes, any quotes used with the search string itself must be delimited with a backslash ('\\').
 
+__Remember to set the Splunk Web timerange to the same time range as the 'start' to 'end' period or you will get incomplete / no results.__
+
 __This search takes a lot of time & resources to complete - use judiciously:__
 
 ```
