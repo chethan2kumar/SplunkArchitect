@@ -233,7 +233,7 @@ This search may help if you're sure the other report settings are correct and yo
 
 ```index=_internal source=*scheduler.log "Top 20 NGE Exception Messages" | stats count by status```  
 
-__Search String -with- Collect__  
+__Troubleshooting a Search String with Collect__  
 
 You can troubleshoot the search string that is using the collect command by adding the 'spool=false' option to the collect command:
 
