@@ -243,11 +243,9 @@ You can troubleshoot the search string that is using the collect command by addi
 
 ```| collect index=summary_nge_exception_messages spool=false source=populating_search  marker=\"datasource=top_20_nge_exception_messages\"```  
 
-By default, spool=true and Splunk saves the search results piped to the collect command into files named <unique alphanumeric>.stash_new in the ```/opt/splunk/var/spool/splunk/``` directory. This is a 'monitored' directory; any files placed here are ingested into the appropriate index, which is (should be) specified in the header of the file.  
+By default, __spool=true__ and Splunk saves any search results piped to the collect command into files named ```<unique alphanumeric>_events.stash_new``` in the ```/opt/splunk/var/spool/splunk/``` directory. This is a 'monitored' directory; any files placed here are ingested into the appropriate index, which is (should be) specified in the header of the file, and then deleted - so they don't stay there very long.  
 
-
-
-Setting spool=false will cause Splunk to save the search results into files named ```<unique alphanumeric>_events.stash``` in the ```/opt/splunk/var/run/splunk/``` directory. You can 'more' this file (if it exists) to see if the datetime and other fields are as you expected.  
+Setting __spool=false__ will cause Splunk to save the search results into files named ```<unique alphanumeric>_events.stash``` in the ```/opt/splunk/var/run/splunk/``` directory. You can 'more' this file (if it exists) to see if the datetime and other fields are as you expected.  
 
 The header and first two events in a typical file created by the collect command are as follows:  
 
