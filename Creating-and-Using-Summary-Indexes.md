@@ -36,6 +36,7 @@ repFactor = auto
 After configuring the index, apply the cluster bundle or restart Splunk as needed so that the new summary index will appear as a selection during scheduled report creation.
 
 [Top](#top)
+***
 
 ## Creating a Scheduled Search Report  <a name="create_report"></a>
 
@@ -134,6 +135,7 @@ search = eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_mes
 | fields start end count percent nge_exception_message\
 ```
 [Top](#top)
+***
 
 ### Using a Summary Index <a name="using_summary_index"></a>
 
@@ -146,9 +148,9 @@ index=summary_nge_exception_messages datasource=top_20_nge_exception_messages | 
 
 [Top](#top)
 
-### Additional Notes <a name="notes"></a>
+## Additional Notes <a name="notes"></a>
 
-#### Populating a Summary Index <a name="populating"></a>
+### Populating a Summary Index <a name="populating"></a>
 
 After creating a scheduled search report, you will continue to add events to your summary index at the configured incremental times. You can also populate the summary index with previous / older data using a derivative of the following search string.  
 
@@ -189,8 +191,9 @@ __This search takes a lot of time & resources to complete - use judiciously:__
 This avoids having to wait for some time period to have time series data available for creating time series / statistical analysis reports.  
 
 [Top](#top)
+***
 
-#### Using the Delete command <a name="delete"></a>
+### Using the Delete command <a name="delete"></a>
 
 You can delete events from a summary index by creating a search that returns the events you want to delete, and then piping the results to the delete command. Be aware that the user ID you use to perform this operation will have to have the 'can delete' role assigned.  ___BE CAREFUL WITH THIS COMMAND!!!___  The delete function is permanent, and obviously, if misused you could erase more data than you wanted or even production indexes. You should be aware that the delete command can be used to delete an entire index, or all indexes if none is specified. A mistake here could be hazardous to your career.  
 
@@ -213,7 +216,7 @@ You should see something like the following for as many indexers as are storing 
 [Top](#top)
 ***
 
-#### Troubleshooting <a name="troubleshooting"></a>
+### Troubleshooting <a name="troubleshooting"></a>
 
 __Scheduled Report__  
 
@@ -233,6 +236,7 @@ This search may help if you're sure the other report settings are correct and yo
 
 ```index=_internal source=*scheduler.log "Top 20 NGE Exception Messages" | stats count by status```  
 
+***
 __Troubleshooting a Search String with Collect__  
 
 You can troubleshoot the search string that is using the collect command by adding the 'spool=false' option to the collect command:
@@ -261,5 +265,5 @@ Note again that a search using the map + collect command as exemplified earlier 
 It may be prudent to test a complex or long-running search using the spool=false option to ensure your search works properly before removing this option and allowing the 'real' search to run.  
 
 [Top](#top)
-
+***
 > Written with [StackEdit](https://stackedit.io/) by James H. Baxter - last update 5/4/2017
