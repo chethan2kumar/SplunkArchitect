@@ -256,7 +256,9 @@ nd="2017-04-20 19:00:00", nge_exception_message="Guest Offer Set contains at lea
 d="2017-04-20 19:00:00", nge_exception_message="Xpass status is not booked.", percent="4.790264", start="2017-04-20 18:00:00", dataso
 urce=top_20_nge_exception_messages
 ```  
-Note again that a search using the map + collect command as exemplified earlier in this document may take a __long__ time to finish.  It may be prudent to test your search using the spool=false option with collect to ensure your search works properly before removing this option and allowing the 'real' search to run.  
+Note again that a search using the map + collect command as exemplified earlier in this document may take a __really - long - time__ to finish if you're spanning longer time periods.  Splunk appears to give such searches a very low priority, and quite some time goes by before you start seeing files generated in the /spool directory and events start showing up in your summary index.  
+
+It may be prudent to test a complex or long-running search using the spool=false option to ensure your search works properly before removing this option and allowing the 'real' search to run.  
 
 [Top](#top)
 
