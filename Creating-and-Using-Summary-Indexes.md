@@ -165,25 +165,26 @@ __Remember to set the Splunk Web timerange to the same time range as the 'start'
 __This search takes a lot of time & resources to complete - use judiciously:__
 
 ```
-| gentimes start=04/01/2017:00:00:00 end=04/24/2017:15:00:00 increment=1h@h
-| map maxsearches=720 search="
-  search earliest=$starttime$ latest=$endtime$ eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_message=*
-| rex field=nge_exception_message mode=sed \"s/(#\d+])/#xxxx]/g\"
+| gentimes start=04/10/2017:00:00:00 end=04/24/2017:00:00:00 increment=1h@h 
+| map maxsearches=720 search=" 
+  search earliest=$starttime$ latest=$endtime$ eventtype=fpp_gxp_services sourcetype=disney_nge_xbms nge_exception_message=* 
+| rex field=nge_exception_message mode=sed \"s/(#\d+])/#xxxx]/g\" 
 | rex field=nge_exception_message mode=sed \"s/(\[.+])/[xxxx]/g\"  
-| rex field=nge_exception_message mode=sed \"s/(Transaction timed out: deadline was .+$)/Transaction timed out: deadline was -date-/g\"
+| rex field=nge_exception_message mode=sed \"s/(Transaction timed out: deadline was .+$)/Transaction timed out: deadline was -date-/g\" 
 | rex field=nge_exception_message mode=sed \"s/(guest\/.*\/identifiers)/guest\/xxxx\/identifiers/g\" 
 | rex field=nge_exception_message mode=sed \"s/(ID: .*$)/ID: xxxx/g\" 
 | rex field=nge_exception_message mode=sed \"s/(For input string: ".*")/For input string "xxxx"/g\" 
 | rex field=nge_exception_message mode=sed \"s/(End Date .* is prior to .*$)/End Date -date- is prior to -date-/g\" 
 | rex field=nge_exception_message mode=sed \"s/(party for \d+ entitlement$)/party for xxxx entitlement/g\" 
 | rex field=nge_exception_message mode=sed \"s/(found for \d+ for)/found for xxxx for/g\" 
-| top 20 nge_exception_message useother=t
-| eval start=strftime($starttime$, \"%Y-%m-%d %T\")
-| eval end=strftime(($endtime$ + 1), \"%Y-%m-%d %T\")
-| eval _time=end
+| top 20 nge_exception_message useother=t 
+| eval start=strftime($starttime$, \"%Y-%m-%d %T\") 
+| eval end=strftime(($endtime$ + 1), \"%Y-%m-%d %T\") 
+| eval _time=$endtime$ + 1
 | fields _time start end count percent nge_exception_message
+| collect index=summary_nge_exception_messages source=populating_search  marker=\"datasource=top_20_nge_exception_messages\"
 "
-| collect index=summary_nge_exception_messages marker="datasource=top_20_nge_exception_messages"
+
 ```
 This avoids having to wait for some time period to have time series data available for creating time series / statistical analysis reports.  
 
@@ -214,6 +215,8 @@ You should see something like the following for as many indexers as are storing 
 
 #### Troubleshooting <a name="troubleshooting"></a>
 
+__Scheduled Report__  
+
 You can verify that the scheduled report is running and validate the run parameters by searching the scheduler.log. Set the time range to include the last report run time and search for the report name:
 
 ```index=_internal source=*scheduler.log "Top 20 NGE Exception Messages" ```
@@ -228,7 +231,32 @@ You may see previous events for the same report run where status=continued, stat
 
 This search may help if you're sure the other report settings are correct and you just want to see if the search report ran successfully:
 
-```index=_internal source=*scheduler.log "Top 20 NGE Exception Messages" | stats count by status```
+```index=_internal source=*scheduler.log "Top 20 NGE Exception Messages" | stats count by status```  
+
+__Search String -with- Collect__  
+
+You can troubleshoot the search string that is using the collect command by adding the 'spool=false' option to the collect command:
+
+```| collect index=summary_nge_exception_messages spool=false source=populating_search  marker=\"datasource=top_20_nge_exception_messages\"```  
+
+By default, spool=true and Splunk saves the search results piped to the collect command into files named <unique alphanumeric>.stash_new in the ```/opt/splunk/var/spool/splunk/``` directory. This is a 'monitored' directory; any files placed here are ingested into the appropriate index, which is (should be) specified in the header of the file.  
+
+
+
+Setting spool=false will cause Splunk to save the search results into files named ```<unique alphanumeric>_events.stash``` in the ```/opt/splunk/var/run/splunk/``` directory. You can 'more' this file (if it exists) to see if the datetime and other fields are as you expected.  
+
+The header and first two events in a typical file created by the collect command are as follows:  
+
+```
+***SPLUNK*** index=summary_nge_exception_messages source=populating_search
+04/20/2017 19:00:00 -0400, info_min_time=1492660800.000, info_max_time=1493006400.000, info_search_time=1494272376.009, count=2475, e
+nd="2017-04-20 19:00:00", nge_exception_message="Guest Offer Set contains at least one booked offer!", percent="64.085966", start="20
+17-04-20 18:00:00", datasource=top_20_nge_exception_messages
+04/20/2017 19:00:00 -0400, info_min_time=1492660800.000, info_max_time=1493006400.000, info_search_time=1494272376.009, count=185, en
+d="2017-04-20 19:00:00", nge_exception_message="Xpass status is not booked.", percent="4.790264", start="2017-04-20 18:00:00", dataso
+urce=top_20_nge_exception_messages
+```  
+Note again that a search using the map + collect command as exemplified earlier in this document may take a __long__ time to finish.  It may be prudent to test your search using the spool=false option with collect to ensure your search works properly before removing this option and allowing the 'real' search to run.  
 
 [Top](#top)
 
