@@ -1,16 +1,16 @@
 # NOTE
 
-This repository is NOT complete, or completely accurate. It was started - and later abandoned - during my journey towards becoming a certified Splunk architect. I recently noticed that some folks have been forking and/or starring this - and I highly recommend NOT using this as a reference. 
+This repository is NOT complete, or completely accurate. It was started - and later abandoned - during my journey towards becoming a certified Splunk architect. I recently noticed that some folks have been forking and/or starring this - and I highly recommend NOT using this as a reference.  
 
-I DO recommend my book: Splunk 7.x Quick Start Guide available from Packt Publising and Amazon, which *is* a complete and accurate reference:
+I DO recommend my book: Splunk 7.x Quick Start Guide available from Packt Publising and Amazon, which *is* a complete and accurate reference - I use it myself on a very regular basis to fill in the gaps for all the stuff you can't remember if you don't do it every day:  
 
-https://www.amazon.com/Splunk-7-x-Quick-Start-Guide-ebook/dp/B07L1MQF4V
+https://www.amazon.com/Splunk-7-x-Quick-Start-Guide-ebook/dp/B07L1MQF4V  
 
-My apologies - I should have been a more responsible repository owner.
+My apologies - I should have been a more responsible repository owner.  
 
-Also: As time permits, I will be migrating the usable data from this repository to my Machine Data Insights repository located here:
+Also: As time permits, I will be migrating the usable data from this repository to my Machine Data Insights repository located here:  
 
-https://github.com/machinedatainsights
+https://github.com/machinedatainsights  
 
 ___
 
