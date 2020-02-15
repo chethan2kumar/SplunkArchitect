@@ -14,7 +14,7 @@ Also: I am migrating the usable data from this repository to my Machine Data Ins
 
 https://github.com/machinedatainsights
 
-
+___
 
 This is a repository for a set of markdown files initially created as a study and reference guide for passing the Splunk Architect certification lab.
 
